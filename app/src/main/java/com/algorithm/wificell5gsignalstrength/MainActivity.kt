@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -93,9 +92,9 @@ private val GoodGreen = Color(0xFF87F14D)
 private val GoodYellow = Color(0xFFF0D93A)
 private val GoodOrange = Color(0xFFF3A14B)
 private val BadRed = Color(0xFFFFA3A3)
-private val SpeedRingGray = Color(0xFF6A7380)
-private val SpeedRingStart = Color(0xFF44D9B4)
-private val SpeedRingEnd = Color(0xFF34C9F1)
+private val SpeedRingGray = Color(0xFF5F6672)
+private val SpeedRingDownload = Color(0xFF43D8C7)
+private val SpeedRingUpload = Color(0xFFC93EF3)
 private val GoBlue = Color(0xFF145EC8)
 private val GoBlue2 = Color(0xFF2B75D9)
 private val CyanStroke = Color(0xFF1CE5D2)
@@ -461,9 +460,8 @@ private fun SpeedTestPanel(
         Spacer(modifier = Modifier.height(6.dp))
 
         SpeedCircle(
-            progress = 0.73f,
-            state = SpeedCircleState.Result(
-                downloadMbps = 156.7f,
+            progress = 0.78f,
+            state = SpeedCircleState.UploadResult(
                 uploadMbps = 48.9f,
                 pingMs = 8
             ),
@@ -480,13 +478,20 @@ private fun SpeedCircle(
     state: SpeedCircleState,
     modifier: Modifier = Modifier
 ) {
+    val ringColor = when (state) {
+        is SpeedCircleState.Uploading,
+        is SpeedCircleState.UploadResult -> SpeedRingUpload
+
+        else -> SpeedRingDownload
+    }
+
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val stroke = min(size.width, size.height) * 0.07f
-            val diameter = min(size.width, size.height) - stroke * 1.2f
+            val stroke = min(size.width, size.height) * 0.075f
+            val diameter = min(size.width, size.height) - stroke * 1.3f
             val topLeft = Offset(
                 (size.width - diameter) / 2f,
                 (size.height - diameter) / 2f
@@ -495,8 +500,8 @@ private fun SpeedCircle(
 
             drawArc(
                 color = SpeedRingGray,
-                startAngle = -145f,
-                sweepAngle = 290f,
+                startAngle = -130f,
+                sweepAngle = 360f,
                 useCenter = false,
                 topLeft = topLeft,
                 size = arcSize,
@@ -504,16 +509,9 @@ private fun SpeedCircle(
             )
 
             drawArc(
-                brush = Brush.sweepGradient(
-                    colors = listOf(
-                        SpeedRingStart,
-                        SpeedRingEnd,
-                        SpeedRingStart
-                    ),
-                    center = center
-                ),
-                startAngle = -145f,
-                sweepAngle = 290f * progress.coerceIn(0f, 1f),
+                color = ringColor,
+                startAngle = 130f,
+                sweepAngle = 360f * progress.coerceIn(0f, 1f),
                 useCenter = false,
                 topLeft = topLeft,
                 size = arcSize,
@@ -544,78 +542,98 @@ private fun SpeedCircle(
             }
 
             is SpeedCircleState.Downloading -> {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = state.downloadMbps.format1(),
-                        color = DarkText,
-                        fontSize = 34.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "↓ Mbps",
-                        color = MutedText,
-                        fontSize = 16.sp
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "Ping ${state.pingMs} ms",
-                        color = MutedText,
-                        fontSize = 15.sp
-                    )
-                }
+                SpeedCenterMetric(
+                    value = state.downloadMbps.format1(),
+                    unit = "↓ Mbps",
+                    pingMs = state.pingMs,
+                    unitColor = MutedText
+                )
             }
 
-            is SpeedCircleState.Result -> {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "Download",
-                        color = Color(0xFF14A8C6),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = state.downloadMbps.format1(),
-                        color = DarkText,
-                        fontSize = 30.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "↓ Mbps",
-                        color = MutedText,
-                        fontSize = 14.sp
-                    )
+            is SpeedCircleState.Uploading -> {
+                SpeedCenterMetric(
+                    value = state.uploadMbps.format1(),
+                    unit = "↑ Mbps",
+                    pingMs = state.pingMs,
+                    unitColor = MutedText
+                )
+            }
 
-                    Spacer(modifier = Modifier.height(6.dp))
+            is SpeedCircleState.DownloadResult -> {
+                SpeedCenterMetric(
+                    value = state.downloadMbps.format1(),
+                    unit = "↓ Mbps",
+                    pingMs = state.pingMs,
+                    unitColor = MutedText
+                )
+            }
 
-                    Text(
-                        text = "Upload",
-                        color = Magenta,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = state.uploadMbps.format1(),
-                        color = DarkText,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "↑ Mbps",
-                        color = MutedText,
-                        fontSize = 13.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Text(
-                        text = "Ping ${state.pingMs} ms",
-                        color = DarkText,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            is SpeedCircleState.UploadResult -> {
+                SpeedCenterMetric(
+                    value = state.uploadMbps.format1(),
+                    unit = "↑ Mbps",
+                    pingMs = state.pingMs,
+                    unitColor = MutedText
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun SpeedCenterMetric(
+    value: String,
+    unit: String,
+    pingMs: Int,
+    unitColor: Color
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = value,
+            color = DarkText,
+            fontSize = 44.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(2.dp))
+
+        Text(
+            text = unit,
+            color = unitColor,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+
+        Spacer(modifier = Modifier.height(22.dp))
+
+        Text(
+            text = buildAnnotatedString {
+                withStyle(
+                    style = SpanStyle(
+                        color = MutedText,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Normal
+                    )
+                ) {
+                    append("Ping ")
+                }
+                withStyle(
+                    style = SpanStyle(
+                        color = DarkText,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                ) {
+                    append("$pingMs ms")
+                }
+            }
+        )
     }
 }
 
@@ -1045,8 +1063,17 @@ sealed interface SpeedCircleState {
         val pingMs: Int
     ) : SpeedCircleState
 
-    data class Result(
+    data class Uploading(
+        val uploadMbps: Float,
+        val pingMs: Int
+    ) : SpeedCircleState
+
+    data class DownloadResult(
         val downloadMbps: Float,
+        val pingMs: Int
+    ) : SpeedCircleState
+
+    data class UploadResult(
         val uploadMbps: Float,
         val pingMs: Int
     ) : SpeedCircleState
