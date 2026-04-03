@@ -56,6 +56,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -98,7 +99,6 @@ private val SpeedRingUpload = Color(0xFFC93EF3)
 private val GoBlue = Color(0xFF145EC8)
 private val GoBlue2 = Color(0xFF2B75D9)
 private val CyanStroke = Color(0xFF1CE5D2)
-private val Magenta = Color(0xFFCC27F7)
 
 @Composable
 fun WifiCellSignalScreen() {
@@ -197,7 +197,7 @@ fun WifiCellSignalScreen() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(0.22f),
+                .weight(0.24f),
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             CellSignalCard(
@@ -216,7 +216,7 @@ fun WifiCellSignalScreen() {
             data = interference,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(0.38f)
+                .weight(0.36f)
         )
     }
 }
@@ -286,13 +286,13 @@ private fun WifiSignalCard(
                 imageVector = Icons.Outlined.CellTower,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(15.dp)
             )
         },
         headerCenter = {
             Box(
                 modifier = Modifier
-                    .size(20.dp)
+                    .size(18.dp)
                     .clip(CircleShape)
                     .background(Color(0xFF44E61F))
                     .border(1.dp, Color(0xFF4CAF50), CircleShape)
@@ -302,32 +302,40 @@ private fun WifiSignalCard(
     ) {
         Spacer(modifier = Modifier.height(2.dp))
 
-        Icon(
-            imageVector = Icons.Outlined.NetworkWifi,
-            contentDescription = null,
-            tint = MutedText,
-            modifier = Modifier.size(28.dp)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.NetworkWifi,
+                contentDescription = null,
+                tint = MutedText,
+                modifier = Modifier.size(22.dp)
+            )
 
-        Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.width(6.dp))
 
-        Text(
-            text = data.title,
-            color = MutedText,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
+            Text(
+                text = data.title,
+                color = MutedText,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
 
-        Text(
-            text = data.band,
-            color = BlueAccent,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
+            Spacer(modifier = Modifier.width(6.dp))
+
+            Text(
+                text = data.band,
+                color = BlueAccent,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Clip
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -338,27 +346,30 @@ private fun WifiSignalCard(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        CenterStatLineSmall("dBm", data.dbm.toString())
+        CenterStatLineTiny("dBm", data.dbm.toString())
         Spacer(modifier = Modifier.height(2.dp))
-        CenterStatLineSmall("ping", "${data.pingMs} mSec")
+        CenterStatLineTiny("ping", "${data.pingMs} mSec")
 
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
             text = "Connected to",
             color = MutedText,
-            fontSize = 12.sp,
+            fontSize = 10.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 1
         )
 
         Text(
             text = data.connectedTo,
             color = HeaderGray,
-            fontSize = 14.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -376,39 +387,58 @@ private fun CellSignalCard(
                 imageVector = Icons.Outlined.CellTower,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(14.dp)
             )
         },
         headerTrailing = { HeaderInfoCapsuleSmall() }
     ) {
-        Icon(
-            imageVector = Icons.Rounded.SignalCellularAlt,
-            contentDescription = null,
-            tint = MutedText,
-            modifier = Modifier.size(24.dp)
-        )
+        Spacer(modifier = Modifier.height(2.dp))
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.SignalCellularAlt,
+                contentDescription = null,
+                tint = MutedText,
+                modifier = Modifier.size(18.dp)
+            )
 
-        Text(
-            text = data.title,
-            color = MutedText,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
+            Spacer(modifier = Modifier.width(5.dp))
 
-        Text(
-            text = "(${data.simLabel})  ${data.networkType}",
-            color = BlueAccent,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
+            Text(
+                text = data.title,
+                color = MutedText,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
 
-        Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.width(4.dp))
+
+            Text(
+                text = "(${data.simLabel})",
+                color = DarkText,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
+            )
+
+            Spacer(modifier = Modifier.width(4.dp))
+
+            Text(
+                text = data.networkType,
+                color = BlueAccent,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         QualityRow(
             quality = data.quality,
@@ -421,23 +451,34 @@ private fun CellSignalCard(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            StatBlockSmall("ASU", data.asu.toString())
-            StatBlockSmall("dBm", data.dbm.toString())
+            StatBlockTiny("ASU", data.asu.toString())
+            StatBlockTiny("dBm", data.dbm.toString())
         }
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        CenterStatLineSmall("ping", "${data.pingMs} mSec")
+        CenterStatLineTiny("ping", "${data.pingMs} mSec")
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(7.dp))
 
         Text(
-            text = "Tower ID: ${data.towerId}",
+            text = "Connected to cell tower",
+            color = MutedText,
+            fontSize = 9.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 1
+        )
+
+        Text(
+            text = "ID: ${data.towerId}",
             color = HeaderGray,
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -481,7 +522,6 @@ private fun SpeedCircle(
     val ringColor = when (state) {
         is SpeedCircleState.Uploading,
         is SpeedCircleState.UploadResult -> SpeedRingUpload
-
         else -> SpeedRingDownload
     }
 
@@ -826,7 +866,9 @@ private fun NetworkCardFrame(
                 color = Color.White,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
             if (headerCenter != null) {
@@ -880,9 +922,9 @@ private fun QualityRow(
     quality: SignalQuality,
     compact: Boolean = false
 ) {
-    val textSize = if (compact) 11.sp else 14.sp
-    val chipPaddingH = if (compact) 6.dp else 8.dp
-    val chipPaddingV = if (compact) 3.dp else 4.dp
+    val textSize = if (compact) 9.sp else 12.sp
+    val chipPaddingH = if (compact) 4.dp else 6.dp
+    val chipPaddingV = if (compact) 2.dp else 3.dp
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -940,7 +982,8 @@ private fun QualityWord(
             text = text,
             color = if (selected) Color.Black else MutedText,
             fontSize = textSize,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            maxLines = 1
         )
     }
 }
@@ -958,7 +1001,7 @@ private fun DotSeparator(
 }
 
 @Composable
-private fun CenterStatLineSmall(
+private fun CenterStatLineTiny(
     label: String,
     value: String
 ) {
@@ -967,7 +1010,7 @@ private fun CenterStatLineSmall(
             withStyle(
                 style = SpanStyle(
                     color = MutedText,
-                    fontSize = 13.sp
+                    fontSize = 11.sp
                 )
             ) {
                 append("$label ")
@@ -975,7 +1018,7 @@ private fun CenterStatLineSmall(
             withStyle(
                 style = SpanStyle(
                     color = Color.Black,
-                    fontSize = 17.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
             ) {
@@ -983,12 +1026,13 @@ private fun CenterStatLineSmall(
             }
         },
         modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        maxLines = 1
     )
 }
 
 @Composable
-private fun StatBlockSmall(
+private fun StatBlockTiny(
     label: String,
     value: String
 ) {
@@ -996,13 +1040,13 @@ private fun StatBlockSmall(
         Text(
             text = "$label ",
             color = MutedText,
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             fontWeight = FontWeight.Medium
         )
         Text(
             text = value,
             color = Color.Black,
-            fontSize = 16.sp,
+            fontSize = 13.sp,
             fontWeight = FontWeight.Bold
         )
     }
