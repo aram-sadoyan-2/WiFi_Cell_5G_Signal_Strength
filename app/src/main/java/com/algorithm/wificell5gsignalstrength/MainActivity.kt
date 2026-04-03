@@ -1,15 +1,31 @@
 package com.algorithm.wificell5gsignalstrength
 
+import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.wifi.ScanResult
+import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
+import android.telephony.SignalStrength
+import android.telephony.TelephonyCallback
+import android.telephony.TelephonyManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -37,12 +53,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,27 +77,417 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.min
 
 class MainActivity : ComponentActivity() {
+
+    private val wifiManager by lazy {
+        applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    }
+
+    private val telephonyManager by lazy {
+        getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    }
+
+    private val connectivityManager by lazy {
+        getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    }
+
+    private var uiState by mutableStateOf(SignalUiState())
+    private var speedTestState by mutableStateOf<SpeedCircleState>(SpeedCircleState.Idle)
+
+    private var wifiReceiver: BroadcastReceiver? = null
+    private var telephonyCallback: TelephonyCallback? = null
+    private var refreshJob: Job? = null
+    private var latestSignalStrength: SignalStrength? = null
+    private var speedTestJob: Job? = null
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        refreshAll()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        requestNeededPermissions()
+
         setContent {
             MaterialTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = AppBg
                 ) {
-                    WifiCellSignalScreen()
+                    WifiCellSignalScreen(
+                        state = uiState,
+                        onRefresh = { refreshAll() },
+                        onGoClick = { runFakeSpeedTest() }
+                    )
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        registerWifiReceiver()
+        registerTelephony()
+        startRefreshLoop()
+        refreshAll()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterWifiReceiver()
+        unregisterTelephony()
+        refreshJob?.cancel()
+        refreshJob = null
+        speedTestJob?.cancel()
+        speedTestJob = null
+    }
+
+    private fun requestNeededPermissions() {
+        val permissions = buildList {
+            add(Manifest.permission.ACCESS_WIFI_STATE)
+            add(Manifest.permission.ACCESS_NETWORK_STATE)
+            add(Manifest.permission.READ_PHONE_STATE)
+            add(Manifest.permission.ACCESS_COARSE_LOCATION)
+            add(Manifest.permission.ACCESS_FINE_LOCATION)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                add(Manifest.permission.NEARBY_WIFI_DEVICES)
+            }
+        }.distinct()
+
+        val missing = permissions.filterNot { hasPermission(it) }
+        if (missing.isNotEmpty()) {
+            permissionLauncher.launch(missing.toTypedArray())
+        }
+    }
+
+    private fun hasPermission(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun startRefreshLoop() {
+        refreshJob?.cancel()
+        refreshJob = lifecycleScope.launch {
+            while (isActive) {
+                refreshAll()
+                delay(5000)
+            }
+        }
+    }
+
+    private fun refreshAll() {
+        if (hasWifiScanPermission()) {
+            runCatching { wifiManager.startScan() }
+        }
+        uiState = buildSignalUiState()
+    }
+
+    private fun runFakeSpeedTest() {
+        speedTestJob?.cancel()
+        speedTestJob = lifecycleScope.launch {
+            speedTestState = SpeedCircleState.Downloading(
+                downloadMbps = 32.4f,
+                pingMs = 18
+            )
+            uiState = buildSignalUiState()
+
+            delay(1200)
+
+            speedTestState = SpeedCircleState.Uploading(
+                uploadMbps = 14.8f,
+                pingMs = 16
+            )
+            uiState = buildSignalUiState()
+
+            delay(1200)
+
+            speedTestState = SpeedCircleState.UploadResult(
+                uploadMbps = 14.8f,
+                pingMs = 16
+            )
+            uiState = buildSignalUiState()
+
+            delay(1800)
+
+            speedTestState = SpeedCircleState.Idle
+            uiState = buildSignalUiState()
+        }
+    }
+
+    private fun hasWifiScanPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            hasPermission(Manifest.permission.NEARBY_WIFI_DEVICES)
+        } else {
+            hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    private fun registerWifiReceiver() {
+        if (wifiReceiver != null) return
+
+        wifiReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                uiState = buildSignalUiState()
+            }
+        }
+
+        ContextCompat.registerReceiver(
+            this,
+            wifiReceiver,
+            IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+    }
+
+    private fun unregisterWifiReceiver() {
+        wifiReceiver?.let {
+            runCatching { unregisterReceiver(it) }
+        }
+        wifiReceiver = null
+    }
+
+    private fun registerTelephony() {
+        if (!hasPermission(Manifest.permission.READ_PHONE_STATE)) {
+            latestSignalStrength = runCatching { telephonyManager.signalStrength }.getOrNull()
+            return
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (telephonyCallback != null) return
+
+            val callback = object : TelephonyCallback(), TelephonyCallback.SignalStrengthsListener {
+                override fun onSignalStrengthsChanged(signalStrength: SignalStrength) {
+                    latestSignalStrength = signalStrength
+                    uiState = buildSignalUiState()
+                }
+            }
+
+            telephonyCallback = callback
+
+            runCatching {
+                telephonyManager.registerTelephonyCallback(
+                    mainExecutor,
+                    callback
+                )
+            }
+
+            latestSignalStrength = runCatching { telephonyManager.signalStrength }.getOrNull()
+        } else {
+            latestSignalStrength = runCatching { telephonyManager.signalStrength }.getOrNull()
+        }
+    }
+
+    private fun unregisterTelephony() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            telephonyCallback?.let {
+                runCatching { telephonyManager.unregisterTelephonyCallback(it) }
+            }
+        }
+        telephonyCallback = null
+    }
+
+    @Suppress("DEPRECATION")
+    private fun buildSignalUiState(): SignalUiState {
+        val wifiInfo = runCatching { wifiManager.connectionInfo }.getOrNull()
+        val scanResults = if (hasWifiScanPermission()) {
+            runCatching { wifiManager.scanResults }.getOrDefault(emptyList())
+        } else {
+            emptyList()
+        }
+
+        val activeNetwork = connectivityManager.activeNetwork
+        val caps = activeNetwork?.let { connectivityManager.getNetworkCapabilities(it) }
+
+        val isWifi = caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+        val isCell = caps?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
+
+        val ssid = wifiInfo?.ssid
+            ?.removePrefix("\"")
+            ?.removeSuffix("\"")
+            ?.takeUnless { it.isNullOrBlank() || it == "<unknown ssid>" }
+            ?: "Not connected"
+
+        val wifiRssi = wifiInfo?.rssi ?: -127
+        val wifiFrequency = wifiInfo?.frequency ?: 0
+        val wifiBand = when {
+            wifiFrequency in 2400..2500 -> "2.4 GHz"
+            wifiFrequency in 4900..5900 -> "5 GHz"
+            wifiFrequency in 5925..7125 -> "6 GHz"
+            else -> "Unknown"
+        }
+
+        val wifiLevel = WifiManager.calculateSignalLevel(wifiRssi, 5)
+        val wifiQuality = when (wifiLevel) {
+            0, 1 -> SignalQuality.POOR
+            2, 3 -> SignalQuality.GOOD
+            else -> SignalQuality.EXCELLENT
+        }
+
+        val linkSpeed = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && wifiInfo != null -> {
+                wifiInfo.rxLinkSpeedMbps.takeIf { it > 0 } ?: wifiInfo.linkSpeed
+            }
+            else -> wifiInfo?.linkSpeed ?: 0
+        }.takeIf { it > 0 }
+
+        val cellSignal = latestSignalStrength
+            ?.cellSignalStrengths
+            ?.firstOrNull()
+
+        val cellDbm = cellSignal?.dbm ?: 0
+        val cellAsu = cellSignal?.asuLevel ?: 0
+        val cellQuality = when (cellSignal?.level ?: 0) {
+            0 -> SignalQuality.POOR
+            1, 2 -> SignalQuality.GOOD
+            else -> SignalQuality.EXCELLENT
+        }
+
+        val carrierName = telephonyManager.simOperatorName
+            ?.takeIf { it.isNotBlank() }
+            ?: "Cellular"
+
+        val networkType = networkTypeLabel(telephonyManager.dataNetworkType)
+
+        val sortedScans = scanResults
+            .sortedByDescending { it.level }
+            .take(20)
+
+        val currentWifiRows = sortedScans
+            .filter { sameSsid(it.SSID, ssid) }
+            .map { it.toChannelRow() }
+
+        val interferenceRows = sortedScans
+            .filterNot { sameSsid(it.SSID, ssid) }
+            .filter { isOverlappingChannel(it.frequency, wifiFrequency) }
+            .map { it.toChannelRow() }
+
+        val otherRows = sortedScans
+            .filterNot { sameSsid(it.SSID, ssid) }
+            .filterNot { isOverlappingChannel(it.frequency, wifiFrequency) }
+            .map { it.toChannelRow() }
+
+        val wifiCard = WifiCardData(
+            carrier = if (isWifi) "Connected" else "Wi-Fi",
+            title = "WiFi Signal",
+            band = wifiBand,
+            quality = wifiQuality,
+            dbm = wifiRssi,
+            pingMs = null,
+            connectedTo = ssid,
+            linkSpeedMbps = linkSpeed
+        )
+
+        val sim1 = CellSignalData(
+            carrier = carrierName,
+            title = "Cell Signal",
+            simLabel = "SIM 1",
+            networkType = networkType,
+            quality = cellQuality,
+            asu = cellAsu,
+            dbm = cellDbm,
+            pingMs = null,
+            towerId = "—"
+        )
+
+        val sim2 = CellSignalData(
+            carrier = "SIM 2",
+            title = "Cell Signal",
+            simLabel = "SIM 2",
+            networkType = "—",
+            quality = SignalQuality.POOR,
+            asu = 0,
+            dbm = 0,
+            pingMs = null,
+            towerId = "—"
+        )
+
+        return SignalUiState(
+            wifiCard = wifiCard,
+            sim1 = sim1,
+            sim2 = sim2,
+            speedTest = speedTestState,
+            channels = ChannelSectionData(
+                currentWifi = if (currentWifiRows.isNotEmpty()) {
+                    currentWifiRows
+                } else {
+                    listOf(ChannelRowData("Current", ssid, wifiQuality))
+                },
+                interference = interferenceRows,
+                otherNetworks = otherRows
+            ),
+            activeTransportLabel = when {
+                isWifi -> "Wi-Fi"
+                isCell -> "Cellular"
+                else -> "Offline"
+            }
+        )
+    }
+
+    private fun sameSsid(a: String?, b: String?): Boolean {
+        return !a.isNullOrBlank() && !b.isNullOrBlank() && a == b
+    }
+
+    private fun isOverlappingChannel(otherFreq: Int, currentFreq: Int): Boolean {
+        if (otherFreq == 0 || currentFreq == 0) return false
+        return abs(otherFreq - currentFreq) <= 25
+    }
+
+    private fun networkTypeLabel(type: Int): String {
+        return when (type) {
+            TelephonyManager.NETWORK_TYPE_NR -> "5G"
+            TelephonyManager.NETWORK_TYPE_LTE -> "4G LTE"
+            TelephonyManager.NETWORK_TYPE_HSPAP,
+            TelephonyManager.NETWORK_TYPE_HSPA,
+            TelephonyManager.NETWORK_TYPE_HSDPA,
+            TelephonyManager.NETWORK_TYPE_HSUPA,
+            TelephonyManager.NETWORK_TYPE_UMTS -> "3G"
+            TelephonyManager.NETWORK_TYPE_EDGE,
+            TelephonyManager.NETWORK_TYPE_GPRS,
+            TelephonyManager.NETWORK_TYPE_GSM -> "2G"
+            else -> "Unknown"
+        }
+    }
+}
+
+private fun ScanResult.toChannelRow(): ChannelRowData {
+    val quality = when {
+        level <= -85 -> SignalQuality.POOR
+        level <= -70 -> SignalQuality.OK_ORANGE
+        level <= -60 -> SignalQuality.GOOD
+        else -> SignalQuality.EXCELLENT
+    }
+
+    return ChannelRowData(
+        channel = "Channel ${frequencyToChannel(frequency)}",
+        name = SSID.ifBlank { "<hidden>" },
+        quality = quality
+    )
+}
+
+private fun frequencyToChannel(freq: Int): Int {
+    return when {
+        freq in 2412..2484 -> ((freq - 2412) / 5) + 1
+        freq in 5170..5895 -> (freq - 5000) / 5
+        freq in 5955..7115 -> (freq - 5950) / 5
+        else -> 0
     }
 }
 
@@ -101,128 +510,84 @@ private val GoBlue2 = Color(0xFF2B75D9)
 private val CyanStroke = Color(0xFF1CE5D2)
 
 @Composable
-fun WifiCellSignalScreen() {
-    val wifiCard = remember {
-        WifiCardData(
-            carrier = "Spectrum",
-            title = "WiFi Signal",
-            band = "2.4 GHz",
-            quality = SignalQuality.POOR,
-            dbm = -115,
-            pingMs = 210,
-            connectedTo = "Spec_2431 2"
-        )
-    }
-
-    val sim1 = remember {
-        CellSignalData(
-            carrier = "Verizon",
-            title = "LTE Signal",
-            simLabel = "SIM 1",
-            networkType = "5G",
-            quality = SignalQuality.EXCELLENT,
-            asu = 25,
-            dbm = -89,
-            pingMs = 45,
-            towerId = "US-2048"
-        )
-    }
-
-    val sim2 = remember {
-        CellSignalData(
-            carrier = "T-Mobile",
-            title = "LTE Signal",
-            simLabel = "SIM 2",
-            networkType = "4G",
-            quality = SignalQuality.GOOD,
-            asu = 30,
-            dbm = -110,
-            pingMs = 45,
-            towerId = "US-2048"
-        )
-    }
-
-    val interference = remember {
-        ChannelSectionData(
-            currentWifi = listOf(
-                ChannelRowData("Channel 7", "Spec_2431 2", SignalQuality.EXCELLENT),
-                ChannelRowData("Channel 36", "RDS_New14", SignalQuality.GOOD),
-                ChannelRowData("Channel 1", "Office_24", SignalQuality.GOOD)
-            ),
-            interference = listOf(
-                ChannelRowData("Channel 48", "Baijing tech", SignalQuality.OK_ORANGE),
-                ChannelRowData("Channel 11", "HomeNet_2G", SignalQuality.POOR),
-                ChannelRowData("Channel 6", "Cafe_wifi", SignalQuality.OK_ORANGE)
-            ),
-            otherNetworks = listOf(
-                ChannelRowData("Channel 2", "Xaomi s20-4", SignalQuality.GOOD),
-                ChannelRowData("Channel 149", "Guest_5G", SignalQuality.EXCELLENT),
-                ChannelRowData("Channel 44", "MyRouter-5", SignalQuality.GOOD),
-                ChannelRowData("Channel 9", "AndroidAP", SignalQuality.POOR),
-                ChannelRowData("Channel 3", "TPLink_324", SignalQuality.GOOD),
-                ChannelRowData("Channel 13", "Linksys_Test", SignalQuality.OK_ORANGE)
-            )
-        )
-    }
-
+fun WifiCellSignalScreen(
+    state: SignalUiState,
+    onRefresh: () -> Unit,
+    onGoClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(AppBg)
             .padding(horizontal = 12.dp, vertical = 12.dp)
     ) {
-        TopActionBar()
+        TopActionBar(onRefresh = onRefresh)
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.40f),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.Top
+        BoxWithConstraints(
+            modifier = Modifier.weight(1f)
         ) {
-            WifiSignalCard(
-                data = wifiCard,
-                modifier = Modifier.weight(0.46f)
-            )
+            val compact = maxWidth < 360.dp
 
-            SpeedTestPanel(
-                modifier = Modifier.weight(0.54f)
-            )
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(if (compact) 0.37f else 0.40f),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    WifiSignalCard(
+                        data = state.wifiCard,
+                        modifier = Modifier.weight(0.46f),
+                        compact = compact
+                    )
+
+                    SpeedTestPanel(
+                        state = state.speedTest,
+                        onGoClick = onGoClick,
+                        modifier = Modifier.weight(0.54f),
+                        compact = compact
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(if (compact) 0.25f else 0.24f),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    CellSignalCard(
+                        data = state.sim1,
+                        modifier = Modifier.weight(1f),
+                        compact = compact
+                    )
+                    CellSignalCard(
+                        data = state.sim2,
+                        modifier = Modifier.weight(1f),
+                        compact = compact
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ChannelInterferenceCard(
+                    data = state.channels,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(if (compact) 0.38f else 0.36f),
+                    compact = compact
+                )
+            }
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.24f),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            CellSignalCard(
-                data = sim1,
-                modifier = Modifier.weight(1f)
-            )
-            CellSignalCard(
-                data = sim2,
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        ChannelInterferenceCard(
-            data = interference,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.36f)
-        )
     }
 }
 
 @Composable
-private fun TopActionBar() {
+private fun TopActionBar(onRefresh: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -230,8 +595,8 @@ private fun TopActionBar() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        CircleGradientIconButton(
-            icon = {
+        CircleGradientIconButton {
+            IconButton(onClick = onRefresh) {
                 Icon(
                     imageVector = Icons.Outlined.Refresh,
                     contentDescription = null,
@@ -239,7 +604,7 @@ private fun TopActionBar() {
                     modifier = Modifier.size(22.dp)
                 )
             }
-        )
+        }
 
         Icon(
             imageVector = Icons.Outlined.Settings,
@@ -276,7 +641,8 @@ private fun CircleGradientIconButton(
 @Composable
 private fun WifiSignalCard(
     data: WifiCardData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean
 ) {
     NetworkCardFrame(
         modifier = modifier.fillMaxSize(),
@@ -286,13 +652,13 @@ private fun WifiSignalCard(
                 imageVector = Icons.Outlined.CellTower,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(15.dp)
+                modifier = Modifier.size(if (compact) 14.dp else 15.dp)
             )
         },
         headerCenter = {
             Box(
                 modifier = Modifier
-                    .size(18.dp)
+                    .size(if (compact) 16.dp else 18.dp)
                     .clip(CircleShape)
                     .background(Color(0xFF44E61F))
                     .border(1.dp, Color(0xFF4CAF50), CircleShape)
@@ -311,7 +677,7 @@ private fun WifiSignalCard(
                 imageVector = Icons.Outlined.NetworkWifi,
                 contentDescription = null,
                 tint = MutedText,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(if (compact) 20.dp else 22.dp)
             )
 
             Spacer(modifier = Modifier.width(6.dp))
@@ -319,7 +685,7 @@ private fun WifiSignalCard(
             Text(
                 text = data.title,
                 color = MutedText,
-                fontSize = 11.sp,
+                fontSize = if (compact) 10.sp else 11.sp,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -330,7 +696,7 @@ private fun WifiSignalCard(
             Text(
                 text = data.band,
                 color = BlueAccent,
-                fontSize = 11.sp,
+                fontSize = if (compact) 10.sp else 11.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Clip
@@ -348,14 +714,17 @@ private fun WifiSignalCard(
 
         CenterStatLineTiny("dBm", data.dbm.toString())
         Spacer(modifier = Modifier.height(2.dp))
-        CenterStatLineTiny("ping", "${data.pingMs} mSec")
+        CenterStatLineTiny(
+            label = if (data.linkSpeedMbps != null) "link" else "ping",
+            value = data.linkSpeedMbps?.let { "$it Mbps" } ?: "—"
+        )
 
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
             text = "Connected to",
             color = MutedText,
-            fontSize = 10.sp,
+            fontSize = if (compact) 9.sp else 10.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
             maxLines = 1
@@ -364,7 +733,7 @@ private fun WifiSignalCard(
         Text(
             text = data.connectedTo,
             color = HeaderGray,
-            fontSize = 11.sp,
+            fontSize = if (compact) 10.sp else 11.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
@@ -377,7 +746,8 @@ private fun WifiSignalCard(
 @Composable
 private fun CellSignalCard(
     data: CellSignalData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean
 ) {
     NetworkCardFrame(
         modifier = modifier.fillMaxSize(),
@@ -387,7 +757,7 @@ private fun CellSignalCard(
                 imageVector = Icons.Outlined.CellTower,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(14.dp)
+                modifier = Modifier.size(if (compact) 13.dp else 14.dp)
             )
         },
         headerTrailing = { HeaderInfoCapsuleSmall() }
@@ -403,7 +773,7 @@ private fun CellSignalCard(
                 imageVector = Icons.Rounded.SignalCellularAlt,
                 contentDescription = null,
                 tint = MutedText,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(if (compact) 17.dp else 18.dp)
             )
 
             Spacer(modifier = Modifier.width(5.dp))
@@ -411,7 +781,7 @@ private fun CellSignalCard(
             Text(
                 text = data.title,
                 color = MutedText,
-                fontSize = 10.sp,
+                fontSize = if (compact) 9.sp else 10.sp,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -422,7 +792,7 @@ private fun CellSignalCard(
             Text(
                 text = "(${data.simLabel})",
                 color = DarkText,
-                fontSize = 10.sp,
+                fontSize = if (compact) 9.sp else 10.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1
             )
@@ -432,7 +802,7 @@ private fun CellSignalCard(
             Text(
                 text = data.networkType,
                 color = BlueAccent,
-                fontSize = 11.sp,
+                fontSize = if (compact) 10.sp else 11.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1
             )
@@ -457,14 +827,14 @@ private fun CellSignalCard(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        CenterStatLineTiny("ping", "${data.pingMs} mSec")
+        CenterStatLineTiny("ping", data.pingMs?.let { "$it mSec" } ?: "—")
 
         Spacer(modifier = Modifier.height(7.dp))
 
         Text(
             text = "Connected to cell tower",
             color = MutedText,
-            fontSize = 9.sp,
+            fontSize = if (compact) 8.sp else 9.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
             maxLines = 1
@@ -473,7 +843,7 @@ private fun CellSignalCard(
         Text(
             text = "ID: ${data.towerId}",
             color = HeaderGray,
-            fontSize = 11.sp,
+            fontSize = if (compact) 10.sp else 11.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
@@ -485,7 +855,10 @@ private fun CellSignalCard(
 
 @Composable
 private fun SpeedTestPanel(
-    modifier: Modifier = Modifier
+    state: SpeedCircleState,
+    onGoClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    compact: Boolean
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -494,18 +867,23 @@ private fun SpeedTestPanel(
         Text(
             text = "SPEEDTEST",
             color = MutedText,
-            fontSize = 17.sp,
+            fontSize = if (compact) 15.sp else 17.sp,
             fontWeight = FontWeight.SemiBold
         )
 
         Spacer(modifier = Modifier.height(6.dp))
 
         SpeedCircle(
-            progress = 0.78f,
-            state = SpeedCircleState.UploadResult(
-                uploadMbps = 48.9f,
-                pingMs = 8
-            ),
+            progress = when (state) {
+                SpeedCircleState.Idle -> 0f
+                is SpeedCircleState.Downloading -> 0.45f
+                is SpeedCircleState.Uploading -> 0.78f
+                is SpeedCircleState.DownloadResult -> 1f
+                is SpeedCircleState.UploadResult -> 1f
+            },
+            state = state,
+            compact = compact,
+            onGoClick = onGoClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
@@ -517,6 +895,8 @@ private fun SpeedTestPanel(
 private fun SpeedCircle(
     progress: Float,
     state: SpeedCircleState,
+    compact: Boolean,
+    onGoClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val ringColor = when (state) {
@@ -563,7 +943,7 @@ private fun SpeedCircle(
             SpeedCircleState.Idle -> {
                 Box(
                     modifier = Modifier
-                        .size(120.dp)
+                        .size(if (compact) 96.dp else 120.dp)
                         .clip(CircleShape)
                         .background(
                             brush = Brush.verticalGradient(
@@ -573,11 +953,16 @@ private fun SpeedCircle(
                         .border(4.dp, CyanStroke, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "GO",
-                        color = Color.White,
-                        fontSize = 28.sp
-                    )
+                    IconButton(
+                        onClick = onGoClick,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Text(
+                            text = "GO",
+                            color = Color.White,
+                            fontSize = if (compact) 22.sp else 28.sp
+                        )
+                    }
                 }
             }
 
@@ -586,7 +971,7 @@ private fun SpeedCircle(
                     value = state.downloadMbps.format1(),
                     unit = "↓ Mbps",
                     pingMs = state.pingMs,
-                    unitColor = MutedText
+                    compact = compact
                 )
             }
 
@@ -595,7 +980,7 @@ private fun SpeedCircle(
                     value = state.uploadMbps.format1(),
                     unit = "↑ Mbps",
                     pingMs = state.pingMs,
-                    unitColor = MutedText
+                    compact = compact
                 )
             }
 
@@ -604,7 +989,7 @@ private fun SpeedCircle(
                     value = state.downloadMbps.format1(),
                     unit = "↓ Mbps",
                     pingMs = state.pingMs,
-                    unitColor = MutedText
+                    compact = compact
                 )
             }
 
@@ -613,7 +998,7 @@ private fun SpeedCircle(
                     value = state.uploadMbps.format1(),
                     unit = "↑ Mbps",
                     pingMs = state.pingMs,
-                    unitColor = MutedText
+                    compact = compact
                 )
             }
         }
@@ -625,19 +1010,19 @@ private fun SpeedCenterMetric(
     value: String,
     unit: String,
     pingMs: Int,
-    unitColor: Color
+    compact: Boolean
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = if (compact) 12.dp else 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = value,
             color = DarkText,
-            fontSize = 44.sp,
+            fontSize = if (compact) 32.sp else 44.sp,
             fontWeight = FontWeight.Bold
         )
 
@@ -645,19 +1030,19 @@ private fun SpeedCenterMetric(
 
         Text(
             text = unit,
-            color = unitColor,
-            fontSize = 16.sp,
+            color = MutedText,
+            fontSize = if (compact) 13.sp else 16.sp,
             fontWeight = FontWeight.Medium
         )
 
-        Spacer(modifier = Modifier.height(22.dp))
+        Spacer(modifier = Modifier.height(if (compact) 14.dp else 22.dp))
 
         Text(
             text = buildAnnotatedString {
                 withStyle(
                     style = SpanStyle(
                         color = MutedText,
-                        fontSize = 17.sp,
+                        fontSize = if (compact) 13.sp else 17.sp,
                         fontWeight = FontWeight.Normal
                     )
                 ) {
@@ -666,7 +1051,7 @@ private fun SpeedCenterMetric(
                 withStyle(
                     style = SpanStyle(
                         color = DarkText,
-                        fontSize = 18.sp,
+                        fontSize = if (compact) 14.sp else 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                 ) {
@@ -680,7 +1065,8 @@ private fun SpeedCenterMetric(
 @Composable
 private fun ChannelInterferenceCard(
     data: ChannelSectionData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean
 ) {
     Card(
         modifier = modifier,
@@ -706,7 +1092,7 @@ private fun ChannelInterferenceCard(
             Text(
                 text = "Wi-Fi Channel Interference",
                 color = Color.White,
-                fontSize = 18.sp,
+                fontSize = if (compact) 16.sp else 18.sp,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -718,9 +1104,9 @@ private fun ChannelInterferenceCard(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
-                SectionCard(title = "Current Wi-Fi") {
+                SectionCard(title = "Current Wi-Fi", compact = compact) {
                     data.currentWifi.forEachIndexed { index, row ->
-                        ChannelRow(row)
+                        ChannelRow(row, compact)
                         if (index != data.currentWifi.lastIndex) {
                             HorizontalDivider(
                                 thickness = 1.dp,
@@ -733,9 +1119,9 @@ private fun ChannelInterferenceCard(
             }
 
             item {
-                SectionCard(title = "Interference Channel") {
+                SectionCard(title = "Interference Channel", compact = compact) {
                     data.interference.forEachIndexed { index, row ->
-                        ChannelRow(row)
+                        ChannelRow(row, compact)
                         if (index != data.interference.lastIndex) {
                             HorizontalDivider(
                                 thickness = 1.dp,
@@ -748,17 +1134,15 @@ private fun ChannelInterferenceCard(
             }
 
             item {
-                SectionCard(title = "Other Networks") {
-                    Column {
-                        data.otherNetworks.forEachIndexed { index, row ->
-                            ChannelRow(row)
-                            if (index != data.otherNetworks.lastIndex) {
-                                HorizontalDivider(
-                                    thickness = 1.dp,
-                                    color = BorderGray,
-                                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
-                                )
-                            }
+                SectionCard(title = "Other Networks", compact = compact) {
+                    data.otherNetworks.forEachIndexed { index, row ->
+                        ChannelRow(row, compact)
+                        if (index != data.otherNetworks.lastIndex) {
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                color = BorderGray,
+                                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+                            )
                         }
                     }
                 }
@@ -770,6 +1154,7 @@ private fun ChannelInterferenceCard(
 @Composable
 private fun SectionCard(
     title: String,
+    compact: Boolean,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -786,7 +1171,7 @@ private fun SectionCard(
             Text(
                 text = title,
                 color = DarkText,
-                fontSize = 16.sp,
+                fontSize = if (compact) 14.sp else 16.sp,
                 fontWeight = FontWeight.ExtraBold
             )
 
@@ -800,7 +1185,8 @@ private fun SectionCard(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ChannelRow(
-    row: ChannelRowData
+    row: ChannelRowData,
+    compact: Boolean
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -814,15 +1200,18 @@ private fun ChannelRow(
             Text(
                 text = row.channel,
                 color = BlueAccent,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = if (compact) 12.sp else 14.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
             )
 
             Text(
                 text = row.name,
                 color = DarkText,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = if (compact) 12.sp else 14.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 
@@ -1055,14 +1444,58 @@ private fun StatBlockTiny(
 private fun Float.format1(): String = String.format("%.1f", this)
 
 @Immutable
+data class SignalUiState(
+    val wifiCard: WifiCardData = WifiCardData(
+        carrier = "Wi-Fi",
+        title = "WiFi Signal",
+        band = "Unknown",
+        quality = SignalQuality.POOR,
+        dbm = 0,
+        pingMs = null,
+        connectedTo = "Not connected",
+        linkSpeedMbps = null
+    ),
+    val sim1: CellSignalData = CellSignalData(
+        carrier = "Cellular",
+        title = "Cell Signal",
+        simLabel = "SIM 1",
+        networkType = "Unknown",
+        quality = SignalQuality.POOR,
+        asu = 0,
+        dbm = 0,
+        pingMs = null,
+        towerId = "—"
+    ),
+    val sim2: CellSignalData = CellSignalData(
+        carrier = "SIM 2",
+        title = "Cell Signal",
+        simLabel = "SIM 2",
+        networkType = "—",
+        quality = SignalQuality.POOR,
+        asu = 0,
+        dbm = 0,
+        pingMs = null,
+        towerId = "—"
+    ),
+    val speedTest: SpeedCircleState = SpeedCircleState.Idle,
+    val channels: ChannelSectionData = ChannelSectionData(
+        currentWifi = emptyList(),
+        interference = emptyList(),
+        otherNetworks = emptyList()
+    ),
+    val activeTransportLabel: String = "Offline"
+)
+
+@Immutable
 data class WifiCardData(
     val carrier: String,
     val title: String,
     val band: String,
     val quality: SignalQuality,
     val dbm: Int,
-    val pingMs: Int,
-    val connectedTo: String
+    val pingMs: Int?,
+    val connectedTo: String,
+    val linkSpeedMbps: Int?
 )
 
 @Immutable
@@ -1074,7 +1507,7 @@ data class CellSignalData(
     val quality: SignalQuality,
     val asu: Int,
     val dbm: Int,
-    val pingMs: Int,
+    val pingMs: Int?,
     val towerId: String
 )
 
@@ -1121,14 +1554,4 @@ sealed interface SpeedCircleState {
         val uploadMbps: Float,
         val pingMs: Int
     ) : SpeedCircleState
-}
-
-@Preview(showBackground = true, widthDp = 390, heightDp = 844)
-@Composable
-private fun WifiCellSignalScreenPreview() {
-    MaterialTheme {
-        Surface(color = AppBg) {
-            WifiCellSignalScreen()
-        }
-    }
 }
