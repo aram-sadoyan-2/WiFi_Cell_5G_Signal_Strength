@@ -319,11 +319,19 @@ class MainActivity : ComponentActivity() {
         val isWifi = caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
         val isCell = caps?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
 
-        val ssid = wifiInfo?.ssid
+        val rawSsid = wifiInfo?.ssid
             ?.removePrefix("\"")
             ?.removeSuffix("\"")
-            ?.takeUnless { it.isNullOrBlank() || it == "<unknown ssid>" }
-            ?: "Not connected"
+
+        val ssid = rawSsid?.takeUnless {
+            it.isBlank() || it == "<unknown ssid>" || it == WifiManager.UNKNOWN_SSID
+        }
+
+        val displaySsid = when {
+            isWifi && !ssid.isNullOrBlank() -> ssid
+            isWifi -> "SSID unavailable"
+            else -> "Not connected"
+        }
 
         val wifiRssi = wifiInfo?.rssi ?: -127
         val wifiFrequency = wifiInfo?.frequency ?: 0
@@ -370,9 +378,25 @@ class MainActivity : ComponentActivity() {
             .sortedByDescending { it.level }
             .take(20)
 
-        val currentWifiRows = sortedScans
-            .filter { sameSsid(it.SSID, ssid) }
-            .map { it.toChannelRow() }
+        val currentWifiRows = when {
+            !ssid.isNullOrBlank() -> {
+                sortedScans
+                    .filter { sameSsid(it.SSID, ssid) }
+                    .map { it.toChannelRow() }
+            }
+
+            isWifi -> {
+                listOf(
+                    ChannelRowData(
+                        channel = "Channel ${frequencyToChannel(wifiFrequency)}",
+                        name = "Connected network",
+                        quality = wifiQuality
+                    )
+                )
+            }
+
+            else -> emptyList()
+        }
 
         val interferenceRows = sortedScans
             .filterNot { sameSsid(it.SSID, ssid) }
@@ -391,7 +415,7 @@ class MainActivity : ComponentActivity() {
             quality = wifiQuality,
             dbm = wifiRssi,
             pingMs = null,
-            connectedTo = ssid,
+            connectedTo = displaySsid,
             linkSpeedMbps = linkSpeed
         )
 
@@ -428,7 +452,13 @@ class MainActivity : ComponentActivity() {
                 currentWifi = if (currentWifiRows.isNotEmpty()) {
                     currentWifiRows
                 } else {
-                    listOf(ChannelRowData("Current", ssid, wifiQuality))
+                    listOf(
+                        ChannelRowData(
+                            channel = if (isWifi) "Channel ${frequencyToChannel(wifiFrequency)}" else "Current",
+                            name = displaySsid,
+                            quality = wifiQuality
+                        )
+                    )
                 },
                 interference = interferenceRows,
                 otherNetworks = otherRows
@@ -442,7 +472,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun sameSsid(a: String?, b: String?): Boolean {
-        return !a.isNullOrBlank() && !b.isNullOrBlank() && a == b
+        if (a.isNullOrBlank() || b.isNullOrBlank()) return false
+        return a.removeSurrounding("\"") == b.removeSurrounding("\"")
     }
 
     private fun isOverlappingChannel(otherFreq: Int, currentFreq: Int): Boolean {
@@ -1134,7 +1165,7 @@ private fun ChannelInterferenceCard(
             }
 
             item {
-                SectionCard(title = "Other Networks", compact = compact) {
+                SectionCard(title = "Nearby Networks", compact = compact) {
                     data.otherNetworks.forEachIndexed { index, row ->
                         ChannelRow(row, compact)
                         if (index != data.otherNetworks.lastIndex) {
