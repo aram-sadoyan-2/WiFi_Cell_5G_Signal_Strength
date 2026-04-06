@@ -22,6 +22,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -135,11 +136,19 @@ class MainActivity : ComponentActivity() {
                     WifiCellSignalScreen(
                         state = uiState,
                         onRefresh = { refreshAll() },
-                        onGoClick = { runFakeSpeedTest() }
+                        onGoClick = { runFakeSpeedTest() },
+                        onResetSpeedTest = { resetSpeedTest() }
                     )
                 }
             }
         }
+    }
+
+    private fun resetSpeedTest() {
+        speedTestJob?.cancel()
+        speedTestJob = null
+        speedTestState = SpeedCircleState.Idle
+        uiState = buildSignalUiState()
     }
 
     override fun onStart() {
@@ -527,7 +536,8 @@ private val CyanStroke = Color(0xFF1CE5D2)
 fun WifiCellSignalScreen(
     state: SignalUiState,
     onRefresh: () -> Unit,
-    onGoClick: () -> Unit
+    onGoClick: () -> Unit,
+    onResetSpeedTest: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -562,6 +572,7 @@ fun WifiCellSignalScreen(
                     SpeedTestPanel(
                         state = state.speedTest,
                         onGoClick = onGoClick,
+                        onCloseClick = onResetSpeedTest,
                         modifier = Modifier.weight(0.54f),
                         compact = compact
                     )
@@ -872,38 +883,144 @@ private fun CellSignalCard(
 private fun SpeedTestPanel(
     state: SpeedCircleState,
     onGoClick: () -> Unit,
+    onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     compact: Boolean
 ) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "SPEEDTEST",
-            color = MutedText,
-            fontSize = if (compact) 15.sp else 17.sp,
-            fontWeight = FontWeight.SemiBold
-        )
+    if (state is SpeedCircleState.Result) {
+        Box(
+            modifier = modifier.fillMaxSize()
+        ) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 6.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "SPEEDTEST",
+                    color = MutedText,
+                    fontSize = if (compact) 15.sp else 17.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
 
-        Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-        SpeedCircle(
-            progress = when (state) {
-                SpeedCircleState.Idle -> 0f
-                is SpeedCircleState.Downloading -> 0.45f
-                is SpeedCircleState.Uploading -> 0.78f
-                is SpeedCircleState.DownloadResult -> 1f
-                is SpeedCircleState.UploadResult -> 1f
-                is SpeedCircleState.Result -> 1f
-            },
-            state = state,
-            compact = compact,
-            onGoClick = onGoClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-        )
+                Text(
+                    text = "Download",
+                    color = Color(0xFF14A8C6),
+                    fontSize = if (compact) 10.sp else 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Text(
+                    text = state.downloadMbps.format1(),
+                    color = DarkText,
+                    fontSize = if (compact) 30.sp else 36.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "↓Mbps",
+                    color = MutedText,
+                    fontSize = if (compact) 13.sp else 15.sp
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Upload",
+                    color = SpeedRingUpload,
+                    fontSize = if (compact) 10.sp else 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                Text(
+                    text = state.uploadMbps.format1(),
+                    color = DarkText,
+                    fontSize = if (compact) 26.sp else 32.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "↑Mbps",
+                    color = MutedText,
+                    fontSize = if (compact) 12.sp else 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                color = MutedText,
+                                fontSize = if (compact) 14.sp else 16.sp
+                            )
+                        ) {
+                            append("Ping ")
+                        }
+                        withStyle(
+                            style = SpanStyle(
+                                color = DarkText,
+                                fontSize = if (compact) 15.sp else 17.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
+                            append("${state.pingMs} ms")
+                        }
+                    }
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = if (compact) 34.dp else 38.dp, end = 6.dp)
+                    .size(if (compact) 34.dp else 38.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, Color.Black, CircleShape)
+                    .clickable { onCloseClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "×",
+                    color = Color.Black,
+                    fontSize = if (compact) 22.sp else 24.sp
+                )
+            }
+        }
+    } else {
+        Column(
+            modifier = modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "SPEEDTEST",
+                color = MutedText,
+                fontSize = if (compact) 15.sp else 17.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            SpeedCircle(
+                progress = when (state) {
+                    SpeedCircleState.Idle -> 0f
+                    is SpeedCircleState.Downloading -> 0.45f
+                    is SpeedCircleState.Uploading -> 0.78f
+                    is SpeedCircleState.DownloadResult -> 1f
+                    is SpeedCircleState.UploadResult -> 1f
+                    is SpeedCircleState.Result -> 1f
+                },
+                state = state,
+                compact = compact,
+                onGoClick = onGoClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+            )
+        }
     }
 }
 
