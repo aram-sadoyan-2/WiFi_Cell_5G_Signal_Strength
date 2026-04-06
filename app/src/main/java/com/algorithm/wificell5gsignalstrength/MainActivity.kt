@@ -894,68 +894,70 @@ private fun SpeedTestPanel(
             Column(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 6.dp),
+                    .padding(top = 2.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "SPEEDTEST",
                     color = MutedText,
-                    fontSize = if (compact) 15.sp else 17.sp,
+                    fontSize = if (compact) 13.sp else 15.sp,
                     fontWeight = FontWeight.SemiBold
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
                     text = "Download",
                     color = Color(0xFF14A8C6),
-                    fontSize = if (compact) 10.sp else 12.sp,
+                    fontSize = if (compact) 9.sp else 10.sp,
                     fontWeight = FontWeight.Medium
                 )
 
                 Text(
                     text = state.downloadMbps.format1(),
                     color = DarkText,
-                    fontSize = if (compact) 30.sp else 36.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = if (compact) 24.sp else 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = if (compact) 24.sp else 28.sp
                 )
 
                 Text(
                     text = "↓Mbps",
                     color = MutedText,
-                    fontSize = if (compact) 13.sp else 15.sp
+                    fontSize = if (compact) 11.sp else 12.sp
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
                     text = "Upload",
                     color = SpeedRingUpload,
-                    fontSize = if (compact) 10.sp else 12.sp,
+                    fontSize = if (compact) 9.sp else 10.sp,
                     fontWeight = FontWeight.Medium
                 )
 
                 Text(
                     text = state.uploadMbps.format1(),
                     color = DarkText,
-                    fontSize = if (compact) 26.sp else 32.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = if (compact) 21.sp else 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = if (compact) 21.sp else 24.sp
                 )
 
                 Text(
                     text = "↑Mbps",
                     color = MutedText,
-                    fontSize = if (compact) 12.sp else 14.sp
+                    fontSize = if (compact) 10.sp else 11.sp
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
                     text = buildAnnotatedString {
                         withStyle(
                             style = SpanStyle(
                                 color = MutedText,
-                                fontSize = if (compact) 14.sp else 16.sp
+                                fontSize = if (compact) 11.sp else 12.sp
                             )
                         ) {
                             append("Ping ")
@@ -963,7 +965,7 @@ private fun SpeedTestPanel(
                         withStyle(
                             style = SpanStyle(
                                 color = DarkText,
-                                fontSize = if (compact) 15.sp else 17.sp,
+                                fontSize = if (compact) 12.sp else 13.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         ) {
@@ -976,17 +978,17 @@ private fun SpeedTestPanel(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = if (compact) 34.dp else 38.dp, end = 6.dp)
-                    .size(if (compact) 34.dp else 38.dp)
+                    .padding(top = if (compact) 26.dp else 30.dp, end = 4.dp)
+                    .size(if (compact) 28.dp else 32.dp)
                     .clip(CircleShape)
-                    .border(2.dp, Color.Black, CircleShape)
+                    .border(1.5.dp, Color.Black, CircleShape)
                     .clickable { onCloseClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "×",
                     color = Color.Black,
-                    fontSize = if (compact) 22.sp else 24.sp
+                    fontSize = if (compact) 18.sp else 20.sp
                 )
             }
         }
