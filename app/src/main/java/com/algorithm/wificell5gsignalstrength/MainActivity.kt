@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -37,6 +38,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -319,19 +321,11 @@ class MainActivity : ComponentActivity() {
         val isWifi = caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
         val isCell = caps?.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) == true
 
-        val rawSsid = wifiInfo?.ssid
+        val ssid = wifiInfo?.ssid
             ?.removePrefix("\"")
             ?.removeSuffix("\"")
-
-        val ssid = rawSsid?.takeUnless {
-            it.isBlank() || it == "<unknown ssid>" || it == WifiManager.UNKNOWN_SSID
-        }
-
-        val displaySsid = when {
-            isWifi && !ssid.isNullOrBlank() -> ssid
-            isWifi -> "SSID unavailable"
-            else -> "Not connected"
-        }
+            ?.takeUnless { it.isNullOrBlank() || it == "<unknown ssid>" }
+            ?: "Not connected"
 
         val wifiRssi = wifiInfo?.rssi ?: -127
         val wifiFrequency = wifiInfo?.frequency ?: 0
@@ -368,35 +362,21 @@ class MainActivity : ComponentActivity() {
             else -> SignalQuality.EXCELLENT
         }
 
-        val carrierName = telephonyManager.simOperatorName
+        val carrierName = runCatching {
+            telephonyManager.simOperatorName
+        }.getOrNull()
             ?.takeIf { it.isNotBlank() }
             ?: "Cellular"
 
-        val networkType = networkTypeLabel(telephonyManager.dataNetworkType)
+        val networkType = getSafeNetworkTypeLabel()
 
         val sortedScans = scanResults
             .sortedByDescending { it.level }
             .take(20)
 
-        val currentWifiRows = when {
-            !ssid.isNullOrBlank() -> {
-                sortedScans
-                    .filter { sameSsid(it.SSID, ssid) }
-                    .map { it.toChannelRow() }
-            }
-
-            isWifi -> {
-                listOf(
-                    ChannelRowData(
-                        channel = "Channel ${frequencyToChannel(wifiFrequency)}",
-                        name = "Connected network",
-                        quality = wifiQuality
-                    )
-                )
-            }
-
-            else -> emptyList()
-        }
+        val currentWifiRows = sortedScans
+            .filter { sameSsid(it.SSID, ssid) }
+            .map { it.toChannelRow() }
 
         val interferenceRows = sortedScans
             .filterNot { sameSsid(it.SSID, ssid) }
@@ -415,7 +395,7 @@ class MainActivity : ComponentActivity() {
             quality = wifiQuality,
             dbm = wifiRssi,
             pingMs = null,
-            connectedTo = displaySsid,
+            connectedTo = ssid,
             linkSpeedMbps = linkSpeed
         )
 
@@ -452,13 +432,7 @@ class MainActivity : ComponentActivity() {
                 currentWifi = if (currentWifiRows.isNotEmpty()) {
                     currentWifiRows
                 } else {
-                    listOf(
-                        ChannelRowData(
-                            channel = if (isWifi) "Channel ${frequencyToChannel(wifiFrequency)}" else "Current",
-                            name = displaySsid,
-                            quality = wifiQuality
-                        )
-                    )
+                    listOf(ChannelRowData("Current", ssid, wifiQuality))
                 },
                 interference = interferenceRows,
                 otherNetworks = otherRows
@@ -471,9 +445,18 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    private fun getSafeNetworkTypeLabel(): String {
+        val type = runCatching {
+            telephonyManager.dataNetworkType
+        }.getOrElse {
+            runCatching { telephonyManager.networkType }.getOrDefault(0)
+        }
+
+        return networkTypeLabel(type)
+    }
+
     private fun sameSsid(a: String?, b: String?): Boolean {
-        if (a.isNullOrBlank() || b.isNullOrBlank()) return false
-        return a.removeSurrounding("\"") == b.removeSurrounding("\"")
+        return !a.isNullOrBlank() && !b.isNullOrBlank() && a == b
     }
 
     private fun isOverlappingChannel(otherFreq: Int, currentFreq: Int): Boolean {
@@ -550,6 +533,7 @@ fun WifiCellSignalScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(AppBg)
+            .safeDrawingPadding()
             .padding(horizontal = 12.dp, vertical = 12.dp)
     ) {
         TopActionBar(onRefresh = onRefresh)
@@ -609,7 +593,7 @@ fun WifiCellSignalScreen(
                     data = state.channels,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(if (compact) 0.38f else 0.36f),
+                        .weight(if (compact) 0.40f else 0.38f),
                     compact = compact
                 )
             }
@@ -1129,9 +1113,8 @@ private fun ChannelInterferenceCard(
         }
 
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 10.dp),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
@@ -1165,7 +1148,7 @@ private fun ChannelInterferenceCard(
             }
 
             item {
-                SectionCard(title = "Nearby Networks", compact = compact) {
+                SectionCard(title = "Other Networks", compact = compact) {
                     data.otherNetworks.forEachIndexed { index, row ->
                         ChannelRow(row, compact)
                         if (index != data.otherNetworks.lastIndex) {
