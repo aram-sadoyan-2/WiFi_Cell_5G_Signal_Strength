@@ -205,8 +205,12 @@ class MainActivity : ComponentActivity() {
     private fun runFakeSpeedTest() {
         speedTestJob?.cancel()
         speedTestJob = lifecycleScope.launch {
+            val download = 32.4f
+            val upload = 14.8f
+            val ping = 16
+
             speedTestState = SpeedCircleState.Downloading(
-                downloadMbps = 32.4f,
+                downloadMbps = download,
                 pingMs = 18
             )
             uiState = buildSignalUiState()
@@ -214,22 +218,18 @@ class MainActivity : ComponentActivity() {
             delay(1200)
 
             speedTestState = SpeedCircleState.Uploading(
-                uploadMbps = 14.8f,
-                pingMs = 16
+                uploadMbps = upload,
+                pingMs = ping
             )
             uiState = buildSignalUiState()
 
             delay(1200)
 
-            speedTestState = SpeedCircleState.UploadResult(
-                uploadMbps = 14.8f,
-                pingMs = 16
+            speedTestState = SpeedCircleState.Result(
+                downloadMbps = download,
+                uploadMbps = upload,
+                pingMs = ping
             )
-            uiState = buildSignalUiState()
-
-            delay(1800)
-
-            speedTestState = SpeedCircleState.Idle
             uiState = buildSignalUiState()
         }
     }
@@ -895,6 +895,7 @@ private fun SpeedTestPanel(
                 is SpeedCircleState.Uploading -> 0.78f
                 is SpeedCircleState.DownloadResult -> 1f
                 is SpeedCircleState.UploadResult -> 1f
+                is SpeedCircleState.Result -> 1f
             },
             state = state,
             compact = compact,
@@ -916,7 +917,9 @@ private fun SpeedCircle(
 ) {
     val ringColor = when (state) {
         is SpeedCircleState.Uploading,
-        is SpeedCircleState.UploadResult -> SpeedRingUpload
+        is SpeedCircleState.UploadResult,
+        is SpeedCircleState.Result -> SpeedRingUpload
+
         else -> SpeedRingDownload
     }
 
@@ -958,7 +961,7 @@ private fun SpeedCircle(
             SpeedCircleState.Idle -> {
                 Box(
                     modifier = Modifier
-                        .size(if (compact) 96.dp else 120.dp)
+                        .size(if (compact) 104.dp else 132.dp)
                         .clip(CircleShape)
                         .background(
                             brush = Brush.verticalGradient(
@@ -1015,6 +1018,60 @@ private fun SpeedCircle(
                     pingMs = state.pingMs,
                     compact = compact
                 )
+            }
+
+            is SpeedCircleState.Result -> {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Download",
+                        color = Color(0xFF14A8C6),
+                        fontSize = if (compact) 9.sp else 10.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = state.downloadMbps.format1(),
+                        color = DarkText,
+                        fontSize = if (compact) 22.sp else 26.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "↓ Mbps",
+                        color = MutedText,
+                        fontSize = if (compact) 11.sp else 12.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(if (compact) 4.dp else 5.dp))
+
+                    Text(
+                        text = "Upload",
+                        color = SpeedRingUpload,
+                        fontSize = if (compact) 9.sp else 10.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = state.uploadMbps.format1(),
+                        color = DarkText,
+                        fontSize = if (compact) 18.sp else 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "↑ Mbps",
+                        color = MutedText,
+                        fontSize = if (compact) 10.sp else 11.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(if (compact) 4.dp else 5.dp))
+
+                    Text(
+                        text = "Ping ${state.pingMs} ms",
+                        color = DarkText,
+                        fontSize = if (compact) 11.sp else 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
@@ -1565,6 +1622,12 @@ sealed interface SpeedCircleState {
     ) : SpeedCircleState
 
     data class UploadResult(
+        val uploadMbps: Float,
+        val pingMs: Int
+    ) : SpeedCircleState
+
+    data class Result(
+        val downloadMbps: Float,
         val uploadMbps: Float,
         val pingMs: Int
     ) : SpeedCircleState
