@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
 import com.algorithm.wificell5gsignalstrength.ui.CellSignalData
 import com.algorithm.wificell5gsignalstrength.ui.ChannelRowData
@@ -33,14 +34,12 @@ import com.algorithm.wificell5gsignalstrength.ui.SignalUiState
 import com.algorithm.wificell5gsignalstrength.ui.SpeedCircleState
 import com.algorithm.wificell5gsignalstrength.ui.WifiCardData
 import com.algorithm.wificell5gsignalstrength.ui.WifiCellSignalScreen
+import com.algorithm.wificell5gsignalstrength.widget.SpeedTestWidget
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import androidx.glance.appwidget.updateAll
-import com.algorithm.wificell5gsignalstrength.widget.SpeedTestWidget
-import com.algorithm.wificell5gsignalstrength.widget.SpeedTestWidgetReceiver
 
 class MainActivity : ComponentActivity() {
 
@@ -59,6 +58,8 @@ class MainActivity : ComponentActivity() {
     private val connectivityManager by lazy {
         getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
+
+    private val realSpeedTester = RealSpeedTester()
 
     private var uiState by mutableStateOf(SignalUiState())
     private var speedTestState by mutableStateOf<SpeedCircleState>(SpeedCircleState.Idle)
@@ -86,7 +87,7 @@ class MainActivity : ComponentActivity() {
             WifiCellSignalScreen(
                 state = uiState,
                 onRefresh = { refreshAll() },
-                onGoClick = { runFakeSpeedTest() },
+                onGoClick = { runRealSpeedTest() },
                 onResetSpeedTest = { resetSpeedTest() },
                 onSettingsClick = {
                     startActivity(Intent(this, SettingsActivity::class.java))
@@ -96,16 +97,9 @@ class MainActivity : ComponentActivity() {
         }
 
         if (shouldRunSpeedTest) {
-            runFakeSpeedTest()
+            runRealSpeedTest()
             intent?.removeExtra(EXTRA_RUN_SPEED_TEST)
         }
-    }
-
-    private fun resetSpeedTest() {
-        speedTestJob?.cancel()
-        speedTestJob = null
-        speedTestState = SpeedCircleState.Idle
-        uiState = buildSignalUiState()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -114,7 +108,7 @@ class MainActivity : ComponentActivity() {
 
         val shouldRunSpeedTest = intent.getBooleanExtra(EXTRA_RUN_SPEED_TEST, false)
         if (shouldRunSpeedTest) {
-            runFakeSpeedTest()
+            runRealSpeedTest()
             intent.removeExtra(EXTRA_RUN_SPEED_TEST)
         }
     }
@@ -179,42 +173,52 @@ class MainActivity : ComponentActivity() {
         uiState = buildSignalUiState()
     }
 
-    private fun runFakeSpeedTest() {
+    private fun resetSpeedTest() {
+        speedTestJob?.cancel()
+        speedTestJob = null
+        speedTestState = SpeedCircleState.Idle
+        uiState = buildSignalUiState()
+    }
+
+    private fun runRealSpeedTest() {
         speedTestJob?.cancel()
         speedTestJob = lifecycleScope.launch {
-            speedTestState = SpeedCircleState.Downloading(
-                downloadMbps = 32.4f,
-                pingMs = 18
-            )
-            uiState = buildSignalUiState()
+            try {
+                val result = realSpeedTester.run(
+                    onDownloadProgress = { mbps, ping ->
+                        speedTestState = SpeedCircleState.Downloading(
+                            downloadMbps = mbps,
+                            pingMs = ping
+                        )
+                        uiState = buildSignalUiState()
+                    },
+                    onUploadProgress = { mbps, ping ->
+                        speedTestState = SpeedCircleState.Uploading(
+                            uploadMbps = mbps,
+                            pingMs = ping
+                        )
+                        uiState = buildSignalUiState()
+                    }
+                )
 
-            delay(1200)
+                speedTestState = SpeedCircleState.UploadResult(
+                    uploadMbps = result.uploadMbps,
+                    pingMs = result.pingMs
+                )
+                uiState = buildSignalUiState()
 
-            speedTestState = SpeedCircleState.Uploading(
-                uploadMbps = 14.8f,
-                pingMs = 16
-            )
-            uiState = buildSignalUiState()
+                val prefs = getSharedPreferences("speed_widget_prefs", Context.MODE_PRIVATE)
+                prefs.edit()
+                    .putString("speed_value", String.format("%.1f", result.uploadMbps))
+                    .putString("speed_unit", "Mbps")
+                    .putString("ping_value", "${result.pingMs} ms")
+                    .apply()
 
-            delay(1200)
-
-            val finalUpload = 14.8f
-            val finalPing = 16
-
-            speedTestState = SpeedCircleState.UploadResult(
-                uploadMbps = finalUpload,
-                pingMs = finalPing
-            )
-            uiState = buildSignalUiState()
-
-            val prefs = getSharedPreferences("speed_widget_prefs", Context.MODE_PRIVATE)
-            prefs.edit()
-                .putString("speed_value", String.format("%.1f", finalUpload))
-                .putString("speed_unit", "Mbps")
-                .putString("ping_value", "$finalPing ms")
-                .apply()
-
-            SpeedTestWidget().updateAll(this@MainActivity)
+                SpeedTestWidget().updateAll(this@MainActivity)
+            } catch (_: Exception) {
+                speedTestState = SpeedCircleState.Idle
+                uiState = buildSignalUiState()
+            }
         }
     }
 
@@ -503,4 +507,3 @@ private fun frequencyToChannel(freq: Int): Int {
         else -> 0
     }
 }
-
