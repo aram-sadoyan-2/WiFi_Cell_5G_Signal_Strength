@@ -38,8 +38,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import androidx.glance.appwidget.updateAll
+import com.algorithm.wificell5gsignalstrength.widget.SpeedTestWidget
+import com.algorithm.wificell5gsignalstrength.widget.SpeedTestWidgetReceiver
 
 class MainActivity : ComponentActivity() {
+
+    companion object {
+        const val EXTRA_RUN_SPEED_TEST = "extra_run_speed_test"
+    }
 
     private val wifiManager by lazy {
         applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
@@ -72,6 +79,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         requestNeededPermissions()
+
+        val shouldRunSpeedTest = intent?.getBooleanExtra(EXTRA_RUN_SPEED_TEST, false) == true
+
         setContent {
             WifiCellSignalScreen(
                 state = uiState,
@@ -83,6 +93,11 @@ class MainActivity : ComponentActivity() {
                 },
                 openSettingsFromWidget = false
             )
+        }
+
+        if (shouldRunSpeedTest) {
+            runFakeSpeedTest()
+            intent?.removeExtra(EXTRA_RUN_SPEED_TEST)
         }
     }
 
@@ -96,6 +111,12 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+
+        val shouldRunSpeedTest = intent.getBooleanExtra(EXTRA_RUN_SPEED_TEST, false)
+        if (shouldRunSpeedTest) {
+            runFakeSpeedTest()
+            intent.removeExtra(EXTRA_RUN_SPEED_TEST)
+        }
     }
 
     override fun onStart() {
@@ -177,11 +198,23 @@ class MainActivity : ComponentActivity() {
 
             delay(1200)
 
+            val finalUpload = 14.8f
+            val finalPing = 16
+
             speedTestState = SpeedCircleState.UploadResult(
-                uploadMbps = 14.8f,
-                pingMs = 16
+                uploadMbps = finalUpload,
+                pingMs = finalPing
             )
             uiState = buildSignalUiState()
+
+            val prefs = getSharedPreferences("speed_widget_prefs", Context.MODE_PRIVATE)
+            prefs.edit()
+                .putString("speed_value", String.format("%.1f", finalUpload))
+                .putString("speed_unit", "Mbps")
+                .putString("ping_value", "$finalPing ms")
+                .apply()
+
+            SpeedTestWidget().updateAll(this@MainActivity)
         }
     }
 
@@ -470,3 +503,4 @@ private fun frequencyToChannel(freq: Int): Int {
         else -> 0
     }
 }
+
