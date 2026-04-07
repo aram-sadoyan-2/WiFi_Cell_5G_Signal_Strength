@@ -13,11 +13,11 @@ object WidgetPinHelper {
     ): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
 
-        val appWidgetManager = context.getSystemService(AppWidgetManager::class.java)
+        val manager = context.getSystemService(AppWidgetManager::class.java)
         val provider = ComponentName(context, receiverClass)
 
-        return appWidgetManager?.isRequestPinAppWidgetSupported == true &&
-            appWidgetManager.getInstalledProviders().any { it.provider == provider }
+        return manager?.isRequestPinAppWidgetSupported == true &&
+                manager.installedProviders.any { it.provider == provider }
     }
 
     fun requestPin(
@@ -26,11 +26,11 @@ object WidgetPinHelper {
     ): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
 
-        val appWidgetManager = context.getSystemService(AppWidgetManager::class.java)
+        val manager = context.getSystemService(AppWidgetManager::class.java)
         val provider = ComponentName(context, receiverClass)
 
-        if (appWidgetManager?.isRequestPinAppWidgetSupported != true) return false
+        if (manager?.isRequestPinAppWidgetSupported != true) return false
 
-        return appWidgetManager.requestPinAppWidget(provider, null, null)
+        return manager.requestPinAppWidget(provider, null, null)
     }
 }

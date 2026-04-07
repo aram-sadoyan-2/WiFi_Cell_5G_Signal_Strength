@@ -77,12 +77,20 @@ class MainActivity : ComponentActivity() {
                 state = uiState,
                 onRefresh = { refreshAll() },
                 onGoClick = { runFakeSpeedTest() },
-                openSettingsFromWidget = false,
+                onResetSpeedTest = { resetSpeedTest() },
                 onSettingsClick = {
                     startActivity(Intent(this, SettingsActivity::class.java))
-                }
+                },
+                openSettingsFromWidget = false
             )
         }
+    }
+
+    private fun resetSpeedTest() {
+        speedTestJob?.cancel()
+        speedTestJob = null
+        speedTestState = SpeedCircleState.Idle
+        uiState = buildSignalUiState()
     }
 
     override fun onNewIntent(intent: Intent) {
