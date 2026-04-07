@@ -86,6 +86,7 @@ fun WifiCellSignalScreen(
     state: SignalUiState,
     onRefresh: () -> Unit,
     onGoClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     openSettingsFromWidget: Boolean = false
 ) {
     Column(
@@ -95,7 +96,10 @@ fun WifiCellSignalScreen(
             .safeDrawingPadding()
             .padding(horizontal = 12.dp, vertical = 12.dp)
     ) {
-        TopActionBar(onRefresh = onRefresh)
+        TopActionBar(
+            onRefresh = onRefresh,
+            onSettingsClick = onSettingsClick
+        )
 
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -161,7 +165,10 @@ fun WifiCellSignalScreen(
 }
 
 @Composable
-private fun TopActionBar(onRefresh: () -> Unit) {
+private fun TopActionBar(
+    onRefresh: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -173,19 +180,21 @@ private fun TopActionBar(onRefresh: () -> Unit) {
             IconButton(onClick = onRefresh) {
                 Icon(
                     imageVector = Icons.Outlined.Refresh,
-                    contentDescription = null,
+                    contentDescription = "Refresh",
                     tint = Color.White,
                     modifier = Modifier.size(22.dp)
                 )
             }
         }
 
-        Icon(
-            imageVector = Icons.Outlined.Settings,
-            contentDescription = null,
-            tint = HeaderGray,
-            modifier = Modifier.size(30.dp)
-        )
+        IconButton(onClick = onSettingsClick) {
+            Icon(
+                imageVector = Icons.Outlined.Settings,
+                contentDescription = "Settings",
+                tint = HeaderGray,
+                modifier = Modifier.size(30.dp)
+            )
+        }
     }
 }
 

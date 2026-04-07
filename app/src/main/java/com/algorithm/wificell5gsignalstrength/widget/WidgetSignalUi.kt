@@ -1,6 +1,5 @@
 package com.algorithm.wificell5gsignalstrength.widget
 
-import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
@@ -40,28 +39,26 @@ data class WidgetSignalUi(
     val quality: String = "Excellent",
     val band: String = "5 GHz",
     val ping: String = "Ping 21 ms",
-    val qualityColor: Int = 0xFF6EEB83.toInt()
+    val qualityColorRes: Int = R.color.widget_quality_good
 )
 
 class SignalWidget : GlanceAppWidget() {
+
     override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
-            SignalWidgetContent(
-                data = WidgetSignalUi()
-            )
+            SignalWidgetContent(data = WidgetSignalUi())
         }
     }
 }
 
-@SuppressLint("RestrictedApi")
 @Composable
 private fun SignalWidgetContent(data: WidgetSignalUi) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(ColorProvider(0xFF2F3136.toInt()))
+            .background(ColorProvider(R.color.widget_bg))
             .clickable(actionStartActivity<MainActivity>())
             .padding(14.dp),
         contentAlignment = Alignment.TopStart
@@ -84,7 +81,7 @@ private fun SignalWidgetContent(data: WidgetSignalUi) {
                 Text(
                     text = data.title,
                     style = TextStyle(
-                        color = ColorProvider(0xFFFFFFFF.toInt()),
+                        color = ColorProvider(R.color.widget_white),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -96,7 +93,7 @@ private fun SignalWidgetContent(data: WidgetSignalUi) {
             Text(
                 text = data.dbm,
                 style = TextStyle(
-                    color = ColorProvider(0xFFFFFFFF.toInt()),
+                    color = ColorProvider(R.color.widget_white),
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -107,7 +104,7 @@ private fun SignalWidgetContent(data: WidgetSignalUi) {
             Text(
                 text = data.quality,
                 style = TextStyle(
-                    color = ColorProvider(data.qualityColor),
+                    color = ColorProvider(data.qualityColorRes),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -121,7 +118,7 @@ private fun SignalWidgetContent(data: WidgetSignalUi) {
                 Text(
                     text = data.band,
                     style = TextStyle(
-                        color = ColorProvider(0xFFC7CBD1.toInt()),
+                        color = ColorProvider(R.color.widget_secondary_text),
                         fontSize = 12.sp
                     )
                 )
@@ -131,19 +128,11 @@ private fun SignalWidgetContent(data: WidgetSignalUi) {
                 Text(
                     text = data.ping,
                     style = TextStyle(
-                        color = ColorProvider(0xFFC7CBD1.toInt()),
+                        color = ColorProvider(R.color.widget_secondary_text),
                         fontSize = 12.sp
                     )
                 )
             }
-
-            Spacer(modifier = GlanceModifier.height(10.dp))
-
-            Image(
-                provider = ImageProvider(R.drawable.ic_widget_refresh),
-                contentDescription = "Refresh",
-                modifier = GlanceModifier.size(16.dp)
-            )
         }
     }
 }

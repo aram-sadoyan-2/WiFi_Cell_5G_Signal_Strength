@@ -77,7 +77,10 @@ class MainActivity : ComponentActivity() {
                 state = uiState,
                 onRefresh = { refreshAll() },
                 onGoClick = { runFakeSpeedTest() },
-                openSettingsFromWidget = false
+                openSettingsFromWidget = false,
+                onSettingsClick = {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                }
             )
         }
     }

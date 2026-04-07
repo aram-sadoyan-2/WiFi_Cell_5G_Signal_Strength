@@ -1,7 +1,7 @@
-package com.algorithm.wificell5gsignalstrength.settings
+package com.algorithm.wificell5gsignalstrength
 
-import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -13,11 +13,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Widgets
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -25,13 +30,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.algorithm.wificell5gsignalstrength.widget.WidgetSettingsActivity
+import androidx.compose.ui.unit.sp
+import com.algorithm.wificell5gsignalstrength.widget.SignalWidgetReceiver
+import com.algorithm.wificell5gsignalstrength.widget.WidgetPinHelper
 
 class SettingsActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -43,9 +56,25 @@ class SettingsActivity : ComponentActivity() {
                     color = Color(0xFFF1F1F1)
                 ) {
                     SettingsScreen(
-                        onWidgetsClick = {
-                            startActivity(Intent(this, WidgetSettingsActivity::class.java))
-                        }
+                        onBackClick = { finish() },
+                        onAddMediumWidgetClick = {
+                            val pinned = WidgetPinHelper.requestPin(
+                                context = this,
+                                receiverClass = SignalWidgetReceiver::class.java
+                            )
+
+                            if (!pinned) {
+                                Toast.makeText(
+                                    this,
+                                    "Widget pin is not supported on this launcher. Add it from Home Screen → Widgets.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        },
+                        isMediumWidgetPinSupported = WidgetPinHelper.isPinSupported(
+                            context = this,
+                            receiverClass = SignalWidgetReceiver::class.java
+                        )
                     )
                 }
             }
@@ -55,55 +84,164 @@ class SettingsActivity : ComponentActivity() {
 
 @Composable
 private fun SettingsScreen(
-    onWidgetsClick: () -> Unit
+    onBackClick: () -> Unit,
+    onAddMediumWidgetClick: () -> Unit,
+    isMediumWidgetPinSupported: Boolean
 ) {
+    var showManualHelp by remember { mutableStateOf(!isMediumWidgetPinSupported) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF1F1F1))
-            .padding(20.dp)
+            .safeDrawingPadding()
+            .padding(16.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.clickable { onBackClick() }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.Black,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.size(6.dp))
+                    Text(
+                        text = "Back",
+                        color = Color.Black,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(18.dp))
+
         Text(
             text = "Settings",
-            style = MaterialTheme.typography.headlineMedium,
-            color = Color(0xFF111111)
+            color = Color(0xFF111111),
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onWidgetsClick() },
-            shape = RoundedCornerShape(22.dp),
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 18.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            Column(
+                modifier = Modifier.padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.Widgets,
                         contentDescription = null,
-                        tint = Color(0xFF2C62F4)
+                        tint = Color(0xFF2C62F4),
+                        modifier = Modifier.size(22.dp)
                     )
+
+                    Spacer(modifier = Modifier.size(8.dp))
 
                     Text(
                         text = "Widgets",
-                        modifier = Modifier.padding(start = 12.dp),
                         color = Color(0xFF111111),
-                        style = MaterialTheme.typography.titleMedium
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
                 Text(
-                    text = "Open",
-                    color = Color(0xFF8A8A8A)
+                    text = "Medium Signal Widget",
+                    color = Color(0xFF111111),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
+
+                Text(
+                    text = if (isMediumWidgetPinSupported)
+                        "Your device supports adding widget directly from the app."
+                    else
+                        "Your launcher does not support direct widget pinning from app.",
+                    color = Color(0xFF60656D),
+                    fontSize = 14.sp
+                )
+
+                Button(
+                    onClick = {
+                        if (isMediumWidgetPinSupported) {
+                            onAddMediumWidgetClick()
+                        } else {
+                            showManualHelp = true
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2C62F4)
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = if (isMediumWidgetPinSupported) "Add Widget" else "Show Manual Steps",
+                        color = Color.White
+                    )
+                }
+
+                if (showManualHelp) {
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "Manual way:",
+                        color = Color(0xFF111111),
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Text(
+                        text = "1. Go to your phone home screen",
+                        color = Color(0xFF60656D),
+                        fontSize = 14.sp
+                    )
+
+                    Text(
+                        text = "2. Long press on empty area",
+                        color = Color(0xFF60656D),
+                        fontSize = 14.sp
+                    )
+
+                    Text(
+                        text = "3. Tap Widgets",
+                        color = Color(0xFF60656D),
+                        fontSize = 14.sp
+                    )
+
+                    Text(
+                        text = "4. Find WiFi Cell 5G Signal Strength",
+                        color = Color(0xFF60656D),
+                        fontSize = 14.sp
+                    )
+
+                    Text(
+                        text = "5. Drag the widget to the home screen",
+                        color = Color(0xFF60656D),
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
     }
