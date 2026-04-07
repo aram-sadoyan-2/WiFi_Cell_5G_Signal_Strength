@@ -14,4 +14,9 @@
     <color name="widget_quality_good">#6EEB83</color>
     <color name="widget_quality_medium">#F5C451</color>
     <color name="widget_quality_bad">#FF6B6B</color>
+
+    <color name="widget_card_bg">#EFEFEF</color>
+    <color name="widget_primary_text">#111111</color>
+    <color name="widget_button_bg">#2C62F4</color>
+    <color name="widget_button_text">#FFFFFF</color>
 </resources>

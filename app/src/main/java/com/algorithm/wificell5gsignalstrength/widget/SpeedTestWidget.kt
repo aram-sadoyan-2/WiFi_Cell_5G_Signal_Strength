@@ -3,7 +3,6 @@ package com.algorithm.wificell5gsignalstrength.widget
 import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -14,10 +13,10 @@ import androidx.glance.action.Action
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -28,14 +27,12 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
-import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
 import com.algorithm.wificell5gsignalstrength.MainActivity
 import com.algorithm.wificell5gsignalstrength.R
-import androidx.glance.action.actionStartActivity
-import androidx.glance.appwidget.action.actionStartActivity
 
 class SpeedTestWidget : GlanceAppWidget() {
     override suspend fun provideGlance(
@@ -53,12 +50,14 @@ class SpeedTestWidget : GlanceAppWidget() {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
 
+        val runTestAction = actionStartActivity(openIntent)
+
         provideContent {
             SpeedTestWidgetContent(
                 speed = speed,
                 unit = unit,
                 ping = ping,
-                onRunTestClick = actionStartActivity(openIntent)
+                onRunTestClick = runTestAction
             )
         }
     }
@@ -79,17 +78,13 @@ private fun SpeedTestWidgetContent(
         modifier = GlanceModifier
             .fillMaxSize()
             .cornerRadius(28.dp)
-            .background(
-                ColorProvider(
-                    day = Color(0xFFEFEFEF),
-                    night = Color(0xFF202020)
-                )
-            )
-            .padding(16.dp),
+            .background(ColorProvider(R.color.widget_card_bg))
+            .clickable(onRunTestClick)
+            .padding(14.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = GlanceModifier.fillMaxWidth(),
+            modifier = GlanceModifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
@@ -99,10 +94,7 @@ private fun SpeedTestWidgetContent(
                 Text(
                     text = "SPEEDTEST",
                     style = TextStyle(
-                        color = ColorProvider(
-                            day = Color(0xFF60656D),
-                            night = Color(0xFFB8BDC5)
-                        ),
+                        color = ColorProvider(R.color.widget_secondary_text),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -113,22 +105,17 @@ private fun SpeedTestWidgetContent(
                 Image(
                     provider = ImageProvider(R.drawable.ic_widget_refresh),
                     contentDescription = "Run speed test",
-                    modifier = GlanceModifier
-                        .size(22.dp)
-                        .clickable(onRunTestClick)
+                    modifier = GlanceModifier.size(22.dp)
                 )
             }
 
-            Spacer(modifier = GlanceModifier.height(16.dp))
+            Spacer(modifier = GlanceModifier.height(10.dp))
 
             Text(
                 text = speed,
                 style = TextStyle(
-                    color = ColorProvider(
-                        day = Color(0xFF111111),
-                        night = Color(0xFFFFFFFF)
-                    ),
-                    fontSize = 30.sp,
+                    color = ColorProvider(R.color.widget_primary_text),
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
                 )
             )
@@ -136,40 +123,41 @@ private fun SpeedTestWidgetContent(
             Text(
                 text = unit,
                 style = TextStyle(
-                    color = ColorProvider(
-                        day = Color(0xFF60656D),
-                        night = Color(0xFFB8BDC5)
-                    ),
-                    fontSize = 16.sp
+                    color = ColorProvider(R.color.widget_secondary_text),
+                    fontSize = 14.sp
                 )
             )
 
-            Spacer(modifier = GlanceModifier.height(12.dp))
+            Spacer(modifier = GlanceModifier.height(8.dp))
 
             Text(
                 text = "Ping $ping",
                 style = TextStyle(
-                    color = ColorProvider(
-                        day = Color(0xFF111111),
-                        night = Color(0xFFFFFFFF)
-                    ),
-                    fontSize = 14.sp,
+                    color = ColorProvider(R.color.widget_primary_text),
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
             )
 
-            Spacer(modifier = GlanceModifier.height(14.dp))
+            Spacer(modifier = GlanceModifier.height(10.dp))
 
-            Text(
-                text = "Tap refresh to test",
-                style = TextStyle(
-                    color = ColorProvider(
-                        day = Color(0xFF60656D),
-                        night = Color(0xFFB8BDC5)
-                    ),
-                    fontSize = 12.sp
+            Box(
+                modifier = GlanceModifier
+                    .fillMaxWidth()
+                    .cornerRadius(16.dp)
+                    .background(ColorProvider(R.color.widget_button_bg))
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "RUN TEST",
+                    style = TextStyle(
+                        color = ColorProvider(R.color.widget_button_text),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
-            )
+            }
         }
     }
 }
