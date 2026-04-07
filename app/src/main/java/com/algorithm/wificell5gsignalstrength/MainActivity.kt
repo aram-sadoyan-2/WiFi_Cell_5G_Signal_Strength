@@ -19,7 +19,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,7 +30,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -74,6 +72,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -86,6 +85,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.algorithm.wificell5gsignalstrength.settings.SettingsActivity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -144,13 +144,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun resetSpeedTest() {
-        speedTestJob?.cancel()
-        speedTestJob = null
-        speedTestState = SpeedCircleState.Idle
-        uiState = buildSignalUiState()
-    }
-
     override fun onStart() {
         super.onStart()
         registerWifiReceiver()
@@ -188,10 +181,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun hasPermission(permission: String): Boolean {
-        return ContextCompat.checkSelfPermission(
-            this,
-            permission
-        ) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(this, permission) ==
+                PackageManager.PERMISSION_GRANTED
     }
 
     private fun startRefreshLoop() {
@@ -214,12 +205,8 @@ class MainActivity : ComponentActivity() {
     private fun runFakeSpeedTest() {
         speedTestJob?.cancel()
         speedTestJob = lifecycleScope.launch {
-            val download = 32.4f
-            val upload = 14.8f
-            val ping = 16
-
             speedTestState = SpeedCircleState.Downloading(
-                downloadMbps = download,
+                downloadMbps = 32.4f,
                 pingMs = 18
             )
             uiState = buildSignalUiState()
@@ -227,20 +214,27 @@ class MainActivity : ComponentActivity() {
             delay(1200)
 
             speedTestState = SpeedCircleState.Uploading(
-                uploadMbps = upload,
-                pingMs = ping
+                uploadMbps = 14.8f,
+                pingMs = 16
             )
             uiState = buildSignalUiState()
 
             delay(1200)
 
             speedTestState = SpeedCircleState.Result(
-                downloadMbps = download,
-                uploadMbps = upload,
-                pingMs = ping
+                downloadMbps = 32.4f,
+                uploadMbps = 14.8f,
+                pingMs = 16
             )
             uiState = buildSignalUiState()
         }
+    }
+
+    private fun resetSpeedTest() {
+        speedTestJob?.cancel()
+        speedTestJob = null
+        speedTestState = SpeedCircleState.Idle
+        uiState = buildSignalUiState()
     }
 
     private fun hasWifiScanPermission(): Boolean {
@@ -294,10 +288,7 @@ class MainActivity : ComponentActivity() {
             telephonyCallback = callback
 
             runCatching {
-                telephonyManager.registerTelephonyCallback(
-                    mainExecutor,
-                    callback
-                )
+                telephonyManager.registerTelephonyCallback(mainExecutor, callback)
             }
 
             latestSignalStrength = runCatching { telephonyManager.signalStrength }.getOrNull()
@@ -397,45 +388,39 @@ class MainActivity : ComponentActivity() {
             .filterNot { isOverlappingChannel(it.frequency, wifiFrequency) }
             .map { it.toChannelRow() }
 
-        val wifiCard = WifiCardData(
-            carrier = if (isWifi) "Connected" else "Wi-Fi",
-            title = "WiFi Signal",
-            band = wifiBand,
-            quality = wifiQuality,
-            dbm = wifiRssi,
-            pingMs = null,
-            connectedTo = ssid,
-            linkSpeedMbps = linkSpeed
-        )
-
-        val sim1 = CellSignalData(
-            carrier = carrierName,
-            title = "Cell Signal",
-            simLabel = "SIM 1",
-            networkType = networkType,
-            quality = cellQuality,
-            asu = cellAsu,
-            dbm = cellDbm,
-            pingMs = null,
-            towerId = "—"
-        )
-
-        val sim2 = CellSignalData(
-            carrier = "SIM 2",
-            title = "Cell Signal",
-            simLabel = "SIM 2",
-            networkType = "—",
-            quality = SignalQuality.POOR,
-            asu = 0,
-            dbm = 0,
-            pingMs = null,
-            towerId = "—"
-        )
-
         return SignalUiState(
-            wifiCard = wifiCard,
-            sim1 = sim1,
-            sim2 = sim2,
+            wifiCard = WifiCardData(
+                carrier = if (isWifi) "Connected" else "Wi-Fi",
+                title = "WiFi Signal",
+                band = wifiBand,
+                quality = wifiQuality,
+                dbm = wifiRssi,
+                pingMs = null,
+                connectedTo = ssid,
+                linkSpeedMbps = linkSpeed
+            ),
+            sim1 = CellSignalData(
+                carrier = carrierName,
+                title = "Cell Signal",
+                simLabel = "SIM 1",
+                networkType = networkType,
+                quality = cellQuality,
+                asu = cellAsu,
+                dbm = cellDbm,
+                pingMs = null,
+                towerId = "—"
+            ),
+            sim2 = CellSignalData(
+                carrier = "SIM 2",
+                title = "Cell Signal",
+                simLabel = "SIM 2",
+                networkType = "—",
+                quality = SignalQuality.POOR,
+                asu = 0,
+                dbm = 0,
+                pingMs = null,
+                towerId = "—"
+            ),
             speedTest = speedTestState,
             channels = ChannelSectionData(
                 currentWifi = if (currentWifiRows.isNotEmpty()) {
@@ -460,7 +445,6 @@ class MainActivity : ComponentActivity() {
         }.getOrElse {
             runCatching { telephonyManager.networkType }.getOrDefault(0)
         }
-
         return networkTypeLabel(type)
     }
 
@@ -525,7 +509,7 @@ private val GoodGreen = Color(0xFF87F14D)
 private val GoodYellow = Color(0xFFF0D93A)
 private val GoodOrange = Color(0xFFF3A14B)
 private val BadRed = Color(0xFFFFA3A3)
-private val SpeedRingGray = Color(0xFF5F6672)
+private val SpeedRingGray = Color(0xFF6A7380)
 private val SpeedRingDownload = Color(0xFF43D8C7)
 private val SpeedRingUpload = Color(0xFFC93EF3)
 private val GoBlue = Color(0xFF145EC8)
@@ -539,6 +523,8 @@ fun WifiCellSignalScreen(
     onGoClick: () -> Unit,
     onResetSpeedTest: () -> Unit
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -546,7 +532,12 @@ fun WifiCellSignalScreen(
             .safeDrawingPadding()
             .padding(horizontal = 12.dp, vertical = 12.dp)
     ) {
-        TopActionBar(onRefresh = onRefresh)
+        TopActionBar(
+            onRefresh = onRefresh,
+            onSettingsClick = {
+                context.startActivity(Intent(context, SettingsActivity::class.java))
+            }
+        )
 
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -559,7 +550,7 @@ fun WifiCellSignalScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(if (compact) 0.40f else 0.43f),
+                        .weight(if (compact) 0.37f else 0.40f),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.Top
                 ) {
@@ -613,7 +604,10 @@ fun WifiCellSignalScreen(
 }
 
 @Composable
-private fun TopActionBar(onRefresh: () -> Unit) {
+private fun TopActionBar(
+    onRefresh: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -636,7 +630,9 @@ private fun TopActionBar(onRefresh: () -> Unit) {
             imageVector = Icons.Outlined.Settings,
             contentDescription = null,
             tint = HeaderGray,
-            modifier = Modifier.size(30.dp)
+            modifier = Modifier
+                .size(30.dp)
+                .clickable { onSettingsClick() }
         )
     }
 }
@@ -724,17 +720,13 @@ private fun WifiSignalCard(
                 color = BlueAccent,
                 fontSize = if (compact) 10.sp else 11.sp,
                 fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Clip
+                maxLines = 1
             )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        QualityRow(
-            quality = data.quality,
-            compact = true
-        )
+        QualityRow(quality = data.quality, compact = true)
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -836,10 +828,7 @@ private fun CellSignalCard(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        QualityRow(
-            quality = data.quality,
-            compact = true
-        )
+        QualityRow(quality = data.quality, compact = true)
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -992,37 +981,36 @@ private fun SpeedTestPanel(
                 )
             }
         }
-    } else {
-        Column(
-            modifier = modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "SPEEDTEST",
-                color = MutedText,
-                fontSize = if (compact) 15.sp else 17.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+        return
+    }
 
-            Spacer(modifier = Modifier.height(6.dp))
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "SPEEDTEST",
+            color = MutedText,
+            fontSize = if (compact) 15.sp else 17.sp,
+            fontWeight = FontWeight.SemiBold
+        )
 
-            SpeedCircle(
-                progress = when (state) {
-                    SpeedCircleState.Idle -> 0f
-                    is SpeedCircleState.Downloading -> 0.45f
-                    is SpeedCircleState.Uploading -> 0.78f
-                    is SpeedCircleState.DownloadResult -> 1f
-                    is SpeedCircleState.UploadResult -> 1f
-                    is SpeedCircleState.Result -> 1f
-                },
-                state = state,
-                compact = compact,
-                onGoClick = onGoClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-            )
-        }
+        Spacer(modifier = Modifier.height(6.dp))
+
+        SpeedCircle(
+            progress = when (state) {
+                SpeedCircleState.Idle -> 0f
+                is SpeedCircleState.Downloading -> 0.45f
+                is SpeedCircleState.Uploading -> 0.78f
+                is SpeedCircleState.Result -> 1f
+            },
+            state = state,
+            compact = compact,
+            onGoClick = onGoClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+        )
     }
 }
 
@@ -1036,9 +1024,7 @@ private fun SpeedCircle(
 ) {
     val ringColor = when (state) {
         is SpeedCircleState.Uploading,
-        is SpeedCircleState.UploadResult,
         is SpeedCircleState.Result -> SpeedRingUpload
-
         else -> SpeedRingDownload
     }
 
@@ -1046,7 +1032,7 @@ private fun SpeedCircle(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
+        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
             val stroke = min(size.width, size.height) * 0.075f
             val diameter = min(size.width, size.height) - stroke * 1.3f
             val topLeft = Offset(
@@ -1080,26 +1066,22 @@ private fun SpeedCircle(
             SpeedCircleState.Idle -> {
                 Box(
                     modifier = Modifier
-                        .size(if (compact) 104.dp else 132.dp)
+                        .size(if (compact) 96.dp else 120.dp)
                         .clip(CircleShape)
                         .background(
                             brush = Brush.verticalGradient(
                                 colors = listOf(GoBlue2, GoBlue)
                             )
                         )
-                        .border(4.dp, CyanStroke, CircleShape),
+                        .border(4.dp, CyanStroke, CircleShape)
+                        .clickable { onGoClick() },
                     contentAlignment = Alignment.Center
                 ) {
-                    IconButton(
-                        onClick = onGoClick,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Text(
-                            text = "GO",
-                            color = Color.White,
-                            fontSize = if (compact) 22.sp else 28.sp
-                        )
-                    }
+                    Text(
+                        text = "GO",
+                        color = Color.White,
+                        fontSize = if (compact) 22.sp else 28.sp
+                    )
                 }
             }
 
@@ -1121,77 +1103,7 @@ private fun SpeedCircle(
                 )
             }
 
-            is SpeedCircleState.DownloadResult -> {
-                SpeedCenterMetric(
-                    value = state.downloadMbps.format1(),
-                    unit = "↓ Mbps",
-                    pingMs = state.pingMs,
-                    compact = compact
-                )
-            }
-
-            is SpeedCircleState.UploadResult -> {
-                SpeedCenterMetric(
-                    value = state.uploadMbps.format1(),
-                    unit = "↑ Mbps",
-                    pingMs = state.pingMs,
-                    compact = compact
-                )
-            }
-
-            is SpeedCircleState.Result -> {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Download",
-                        color = Color(0xFF14A8C6),
-                        fontSize = if (compact) 9.sp else 10.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = state.downloadMbps.format1(),
-                        color = DarkText,
-                        fontSize = if (compact) 22.sp else 26.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "↓ Mbps",
-                        color = MutedText,
-                        fontSize = if (compact) 11.sp else 12.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(if (compact) 4.dp else 5.dp))
-
-                    Text(
-                        text = "Upload",
-                        color = SpeedRingUpload,
-                        fontSize = if (compact) 9.sp else 10.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = state.uploadMbps.format1(),
-                        color = DarkText,
-                        fontSize = if (compact) 18.sp else 22.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "↑ Mbps",
-                        color = MutedText,
-                        fontSize = if (compact) 10.sp else 11.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(if (compact) 4.dp else 5.dp))
-
-                    Text(
-                        text = "Ping ${state.pingMs} ms",
-                        color = DarkText,
-                        fontSize = if (compact) 11.sp else 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+            is SpeedCircleState.Result -> Unit
         }
     }
 }
@@ -1289,8 +1201,9 @@ private fun ChannelInterferenceCard(
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 10.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
@@ -1509,36 +1422,18 @@ private fun QualityRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        QualityWord(
-            text = "Poor",
-            selected = quality == SignalQuality.POOR,
-            selectedColor = BadRed,
-            textSize = textSize,
-            paddingH = chipPaddingH,
-            paddingV = chipPaddingV
-        )
-
+        QualityWord("Poor", quality == SignalQuality.POOR, BadRed, textSize, chipPaddingH, chipPaddingV)
         DotSeparator(textSize)
-
         QualityWord(
-            text = "Good",
-            selected = quality == SignalQuality.GOOD || quality == SignalQuality.OK_ORANGE,
-            selectedColor = if (quality == SignalQuality.OK_ORANGE) GoodOrange else GoodYellow,
-            textSize = textSize,
-            paddingH = chipPaddingH,
-            paddingV = chipPaddingV
+            "Good",
+            quality == SignalQuality.GOOD || quality == SignalQuality.OK_ORANGE,
+            if (quality == SignalQuality.OK_ORANGE) GoodOrange else GoodYellow,
+            textSize,
+            chipPaddingH,
+            chipPaddingV
         )
-
         DotSeparator(textSize)
-
-        QualityWord(
-            text = "Excellent",
-            selected = quality == SignalQuality.EXCELLENT,
-            selectedColor = GoodGreen,
-            textSize = textSize,
-            paddingH = chipPaddingH,
-            paddingV = chipPaddingV
-        )
+        QualityWord("Excellent", quality == SignalQuality.EXCELLENT, GoodGreen, textSize, chipPaddingH, chipPaddingV)
     }
 }
 
@@ -1568,9 +1463,7 @@ private fun QualityWord(
 }
 
 @Composable
-private fun DotSeparator(
-    textSize: TextUnit
-) {
+private fun DotSeparator(textSize: TextUnit) {
     Text(
         text = " · ",
         color = MutedText,
@@ -1731,16 +1624,6 @@ sealed interface SpeedCircleState {
     ) : SpeedCircleState
 
     data class Uploading(
-        val uploadMbps: Float,
-        val pingMs: Int
-    ) : SpeedCircleState
-
-    data class DownloadResult(
-        val downloadMbps: Float,
-        val pingMs: Int
-    ) : SpeedCircleState
-
-    data class UploadResult(
         val uploadMbps: Float,
         val pingMs: Int
     ) : SpeedCircleState

@@ -31,6 +31,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".settings.SettingsActivity" />
+        <activity android:name=".widget.WidgetSettingsActivity" />
+
+        <receiver
+            android:name=".widget.SpeedTestWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/speed_test_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

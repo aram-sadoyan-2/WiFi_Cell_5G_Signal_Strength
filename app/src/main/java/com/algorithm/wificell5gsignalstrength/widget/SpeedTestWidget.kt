@@ -32,7 +32,6 @@ import androidx.glance.text.TextStyle
 import com.algorithm.wificell5gsignalstrength.MainActivity
 
 class SpeedTestWidget : GlanceAppWidget() {
-
     override suspend fun provideGlance(
         context: Context,
         id: GlanceId
@@ -48,9 +47,7 @@ class SpeedTestWidget : GlanceAppWidget() {
                 speed = speed,
                 unit = unit,
                 ping = ping,
-                onClick = actionStartActivity(
-                    Intent(context, MainActivity::class.java)
-                )
+                onClick = actionStartActivity(Intent(context, MainActivity::class.java))
             )
         }
     }
@@ -78,7 +75,6 @@ private fun SpeedTestWidgetContent(
                 )
             )
             .padding(16.dp)
-            .fillMaxWidth()
             .clickable(onClick),
         contentAlignment = Alignment.Center
     ) {
