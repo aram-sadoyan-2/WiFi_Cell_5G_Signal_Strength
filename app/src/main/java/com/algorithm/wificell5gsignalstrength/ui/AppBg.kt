@@ -116,7 +116,7 @@ fun WifiCellSignalScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(if (compact) 0.34f else 0.36f),
+                            .weight(if (compact) 0.30f else 0.30f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.Top
                     ) {
@@ -141,7 +141,7 @@ fun WifiCellSignalScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(if (compact) 0.26f else 0.25f),
+                            .weight(if (compact) 0.3f else 0.3f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         CellSignalCard(
@@ -391,70 +391,184 @@ private fun CellSignalCard(
     compact: Boolean,
     onInfoClick: () -> Unit
 ) {
-    NetworkCardFrame(
-        modifier = modifier.fillMaxSize(),
-        headerTitle = data.carrier,
-        headerTrailing = { HeaderInfoCapsuleSmall(onClick = onInfoClick) }
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(26.dp),
+        colors = CardDefaults.cardColors(containerColor = HeaderGray),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Icon(
-            imageVector = Icons.Rounded.SignalCellularAlt,
-            contentDescription = null,
-            tint = MutedText,
-            modifier = Modifier.size(if (compact) 20.dp else 24.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.CellTower,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
+            )
 
-        //Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.width(6.dp))
 
-        Text(
-            text = data.title,
-            color = MutedText,
-            fontSize = if (compact) 9.sp else 10.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 1
-        )
+            Text(
+                text = data.carrier,
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
 
-        Text(
-            text = "(${data.simLabel}) ${data.networkType}",
-            color = BlueAccent,
-            fontSize = if (compact) 10.sp else 11.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 1
-        )
+            HeaderInfoCapsuleSmall(onClick = onInfoClick)
+        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Card(
+            modifier = Modifier.fillMaxSize(),
+            shape = RoundedCornerShape(26.dp),
+            colors = CardDefaults.cardColors(containerColor = CardBg),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 14.dp)
+                    .padding(top = 12.dp, bottom = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(if (compact) 24.dp else 28.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(MutedText),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "",
+                            color = Color.White
+                        )
+                    }
 
-        Text(
-            text = "ASU ${data.asu}",
-            color = DarkText,
-            fontSize = if (compact) 11.sp else 12.sp,
-            fontWeight = FontWeight.Bold
-        )
+                    Spacer(modifier = Modifier.width(8.dp))
 
-        Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = data.title,
+                        color = MutedText,
+                        fontSize = if (compact) 10.sp else 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1
+                    )
 
-        Text(
-            text = "dBm ${data.dbm}",
-            color = DarkText,
-            fontSize = if (compact) 11.sp else 12.sp,
-            fontWeight = FontWeight.Bold
-        )
+                    Spacer(modifier = Modifier.width(4.dp))
 
-        Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "(${data.simLabel})",
+                        color = DarkText,
+                        fontSize = if (compact) 10.sp else 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
 
-        Text(
-            text = "Tower ID: ${data.towerId}",
-            color = HeaderGray,
-            fontSize = if (compact) 10.sp else 11.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    Text(
+                        text = data.networkType,
+                        color = BlueAccent,
+                        fontSize = if (compact) 11.sp else 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                QualityRow(
+                    quality = data.quality,
+                    compact = true
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = "ASU ",
+                            color = MutedText,
+                            fontSize = if (compact) 11.sp else 12.sp
+                        )
+                        Text(
+                            text = data.asu.toString(),
+                            color = DarkText,
+                            fontSize = if (compact) 16.sp else 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = "dBm ",
+                            color = MutedText,
+                            fontSize = if (compact) 11.sp else 12.sp
+                        )
+                        Text(
+                            text = data.dbm.toString(),
+                            color = DarkText,
+                            fontSize = if (compact) 16.sp else 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Text(
+                        text = "ping ",
+                        color = MutedText,
+                        fontSize = if (compact) 11.sp else 12.sp
+                    )
+                    Text(
+                        text = data.pingMs?.let { "$it mSec" } ?: "—",
+                        color = DarkText,
+                        fontSize = if (compact) 16.sp else 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Connected to cell tower",
+                    color = MutedText,
+                    fontSize = if (compact) 10.sp else 11.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1
+                )
+
+                Text(
+                    text = "ID: ${data.towerId}",
+                    color = HeaderGray,
+                    fontSize = if (compact) 12.sp else 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
     }
 }
 
