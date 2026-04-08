@@ -540,7 +540,18 @@ class MainActivity : ComponentActivity() {
 
     private fun isOverlappingChannel(otherFreq: Int, currentFreq: Int): Boolean {
         if (otherFreq == 0 || currentFreq == 0) return false
-        return abs(otherFreq - currentFreq) <= 25
+
+        val currentChannel = frequencyToChannel(currentFreq)
+        val otherChannel = frequencyToChannel(otherFreq)
+
+        val both24 = currentFreq in 2400..2500 && otherFreq in 2400..2500
+        val both5 = currentFreq in 4900..5900 && otherFreq in 4900..5900
+
+        return when {
+            both24 -> kotlin.math.abs(currentChannel - otherChannel) <= 2
+            both5 -> currentChannel == otherChannel
+            else -> false
+        }
     }
 
     private fun networkTypeLabel(type: Int): String {
