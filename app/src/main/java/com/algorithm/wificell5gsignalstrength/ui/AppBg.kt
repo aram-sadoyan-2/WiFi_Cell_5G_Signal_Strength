@@ -53,6 +53,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.algorithm.wificell5gsignalstrength.CellInfoPopupData
@@ -242,79 +244,139 @@ private fun WifiSignalCard(
     compact: Boolean,
     onInfoClick: () -> Unit
 ) {
-    NetworkCardFrame(
-        modifier = modifier.fillMaxSize(),
-        headerTitle = data.carrier,
-        headerTrailing = { HeaderInfoCapsuleSmall(onClick = onInfoClick) }
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(26.dp),
+        colors = CardDefaults.cardColors(containerColor = HeaderGray),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Icon(
-            imageVector = Icons.Outlined.NetworkWifi,
-            contentDescription = null,
-            tint = MutedText,
-            modifier = Modifier.size(if (compact) 22.dp else 26.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.SignalCellularAlt,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(if (compact) 15.dp else 17.dp)
+            )
 
-        Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.width(6.dp))
 
-        Text(
-            text = data.title,
-            color = MutedText,
-            fontSize = if (compact) 10.sp else 11.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+            Text(
+                text = data.carrier,
+                color = Color.White,
+                fontSize = if (compact) 14.sp else 16.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
 
-        Text(
-            text = data.band,
-            color = BlueAccent,
-            fontSize = if (compact) 10.sp else 11.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 1
-        )
+            Box(
+                modifier = Modifier
+                    .size(if (compact) 18.dp else 20.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF44E61F))
+                    .border(1.dp, Color(0xFF4CAF50), CircleShape)
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
-        Text(
-            text = "dBm ${data.dbm}",
-            color = DarkText,
-            fontSize = if (compact) 11.sp else 12.sp,
-            fontWeight = FontWeight.Bold
-        )
+            HeaderInfoCapsuleSmall(onClick = onInfoClick)
+        }
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Card(
+            modifier = Modifier.fillMaxSize(),
+            shape = RoundedCornerShape(26.dp),
+            colors = CardDefaults.cardColors(containerColor = CardBg),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 14.dp).padding( top = 12.dp, bottom = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.NetworkWifi,
+                    contentDescription = null,
+                    tint = MutedText,
+                    modifier = Modifier.size(if (compact) 34.dp else 40.dp)
+                )
 
-        Text(
-            text = data.linkSpeedMbps?.let { "link $it Mbps" } ?: "ping —",
-            color = MutedText,
-            fontSize = if (compact) 10.sp else 11.sp
-        )
+                Spacer(modifier = Modifier.height(6.dp))
 
-        Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = data.title,
+                        color = MutedText,
+                        fontSize = if (compact) 11.sp else 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1
+                    )
 
-        Text(
-            text = "Connected to",
-            color = MutedText,
-            fontSize = if (compact) 9.sp else 10.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 1
-        )
+                    Spacer(modifier = Modifier.width(8.dp))
 
-        Text(
-            text = data.connectedTo,
-            color = HeaderGray,
-            fontSize = if (compact) 10.sp else 11.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+                    Text(
+                        text = data.band,
+                        color = BlueAccent,
+                        fontSize = if (compact) 11.sp else 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                QualityRow(
+                    quality = data.quality,
+                    compact = true
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = "dBm ${data.dbm}",
+                    color = DarkText,
+                    fontSize = if (compact) 13.sp else 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = data.linkSpeedMbps?.let { "link $it Mbps" } ?: "ping —",
+                    color = MutedText,
+                    fontSize = if (compact) 11.sp else 12.sp
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Connected to",
+                    color = MutedText,
+                    fontSize = if (compact) 10.sp else 11.sp,
+                    textAlign = TextAlign.Center
+                )
+
+                Text(
+                    text = data.connectedTo,
+                    color = HeaderGray,
+                    fontSize = if (compact) 11.sp else 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
     }
 }
 
@@ -1094,6 +1156,104 @@ private fun InfoLine(
             color = DarkText,
             fontSize = 17.sp,
             fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun QualityRow(
+    quality: SignalQuality,
+    compact: Boolean = false
+) {
+    val textSize = if (compact) 11.sp else 14.sp
+    val chipPadH = if (compact) 8.dp else 10.dp
+    val chipPadV = if (compact) 3.dp else 4.dp
+    val normalColor = MutedText
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        QualityItem(
+            text = "Poor",
+            selected = quality == SignalQuality.POOR,
+            selectedColor = Color(0xFFF08E8E),
+            textSize = textSize,
+            chipPadH = chipPadH,
+            chipPadV = chipPadV,
+            normalColor = normalColor
+        )
+
+        Text(
+            text = "·",
+            color = normalColor,
+            fontSize = textSize,
+            modifier = Modifier.padding(horizontal = 6.dp)
+        )
+
+        QualityItem(
+            text = "Good",
+            selected = quality == SignalQuality.GOOD || quality == SignalQuality.OK_ORANGE,
+            selectedColor = if (quality == SignalQuality.OK_ORANGE) {
+                Color(0xFFF3C15A)
+            } else {
+                Color(0xFFF0D93A)
+            },
+            textSize = textSize,
+            chipPadH = chipPadH,
+            chipPadV = chipPadV,
+            normalColor = normalColor
+        )
+
+        Text(
+            text = "·",
+            color = normalColor,
+            fontSize = textSize,
+            modifier = Modifier.padding(horizontal = 6.dp)
+        )
+
+        QualityItem(
+            text = "Excellent",
+            selected = quality == SignalQuality.EXCELLENT,
+            selectedColor = Color(0xFF8EF15A),
+            textSize = textSize,
+            chipPadH = chipPadH,
+            chipPadV = chipPadV,
+            normalColor = normalColor
+        )
+    }
+}
+
+@Composable
+private fun QualityItem(
+    text: String,
+    selected: Boolean,
+    selectedColor: Color,
+    textSize: TextUnit,
+    chipPadH: Dp,
+    chipPadV: Dp,
+    normalColor: Color
+) {
+    if (selected) {
+        Box(
+            modifier = Modifier
+                .background(selectedColor, RoundedCornerShape(0.dp))
+                .padding(horizontal = chipPadH, vertical = chipPadV),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                color = Color.Black,
+                fontSize = textSize,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    } else {
+        Text(
+            text = text,
+            color = normalColor,
+            fontSize = textSize,
+            fontWeight = FontWeight.SemiBold
         )
     }
 }
