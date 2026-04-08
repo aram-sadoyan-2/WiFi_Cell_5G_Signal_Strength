@@ -321,7 +321,7 @@ class MainActivity : ComponentActivity() {
         val ssid = wifiInfo?.ssid
             ?.removePrefix("\"")
             ?.removeSuffix("\"")
-            ?.takeUnless { it.isNullOrBlank() || it == "<unknown ssid>" }
+            ?.takeUnless { it.isBlank() || it == "<unknown ssid>" }
             ?: "Not connected"
 
         val wifiRssi = wifiInfo?.rssi ?: -127

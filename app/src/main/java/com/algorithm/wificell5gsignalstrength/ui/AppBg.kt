@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CellTower
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.NetworkWifi
@@ -253,14 +254,14 @@ private fun WifiSignalCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+                .padding(start = 10.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Rounded.SignalCellularAlt,
+                imageVector = Icons.Outlined.CellTower,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(if (compact) 15.dp else 17.dp)
+                modifier = Modifier.size(18.dp)
             )
 
             Spacer(modifier = Modifier.width(6.dp))
@@ -268,7 +269,7 @@ private fun WifiSignalCard(
             Text(
                 text = data.carrier,
                 color = Color.White,
-                fontSize = if (compact) 14.sp else 16.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f),
                 maxLines = 1,
@@ -277,7 +278,7 @@ private fun WifiSignalCard(
 
             Box(
                 modifier = Modifier
-                    .size(if (compact) 18.dp else 20.dp)
+                    .size(20.dp)
                     .clip(CircleShape)
                     .background(Color(0xFF44E61F))
                     .border(1.dp, Color(0xFF4CAF50), CircleShape)
@@ -297,79 +298,82 @@ private fun WifiSignalCard(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 14.dp).padding( top = 12.dp, bottom = 10.dp),
+                    .padding(horizontal = 16.dp).padding( top = 12.dp, bottom = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.NetworkWifi,
-                    contentDescription = null,
-                    tint = MutedText,
-                    modifier = Modifier.size(if (compact) 34.dp else 40.dp)
-                )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(
+                        imageVector = Icons.Outlined.NetworkWifi,
+                        contentDescription = null,
+                        tint = MutedText,
+                        modifier = Modifier.size(18.dp)
+                    )
+
+                    Spacer(modifier = Modifier.width(6.dp))
+
                     Text(
                         text = data.title,
                         color = MutedText,
-                        fontSize = if (compact) 11.sp else 12.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Medium,
                         maxLines = 1
                     )
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
 
                     Text(
                         text = data.band,
                         color = BlueAccent,
-                        fontSize = if (compact) 11.sp else 12.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1
                     )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 QualityRow(
                     quality = data.quality,
                     compact = true
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = "dBm ${data.dbm}",
                     color = DarkText,
-                    fontSize = if (compact) 13.sp else 14.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = data.linkSpeedMbps?.let { "link $it Mbps" } ?: "ping —",
-                    color = MutedText,
-                    fontSize = if (compact) 11.sp else 12.sp
+                    text = data.pingMs?.let { "ping $it mSec" }
+                        ?: data.linkSpeedMbps?.let { "link $it Mbps" }
+                        ?: "ping —",
+                    color = DarkText,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
                     text = "Connected to",
                     color = MutedText,
-                    fontSize = if (compact) 10.sp else 11.sp,
+                    fontSize = 11.sp,
                     textAlign = TextAlign.Center
                 )
 
                 Text(
                     text = data.connectedTo,
                     color = HeaderGray,
-                    fontSize = if (compact) 11.sp else 12.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
