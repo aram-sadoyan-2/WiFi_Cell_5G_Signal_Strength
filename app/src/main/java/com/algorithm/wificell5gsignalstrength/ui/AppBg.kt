@@ -62,6 +62,8 @@ import com.algorithm.wificell5gsignalstrength.CellInfoPopupData
 import com.algorithm.wificell5gsignalstrength.NetworkInfoPopupData
 import com.algorithm.wificell5gsignalstrength.WifiInfoPopupData
 import kotlin.math.min
+import androidx.compose.ui.res.painterResource
+import com.algorithm.wificell5gsignalstrength.R
 
 private val AppBg = Color(0xFFF1F1F1)
 private val HeaderGray = Color(0xFF8A8A8A)
@@ -443,18 +445,12 @@ private fun CellSignalCard(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(if (compact) 24.dp else 28.dp)
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(MutedText),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "",
-                            color = Color.White
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_sim_card),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(if (compact) 24.dp else 28.dp)
+                    )
 
                     Spacer(modifier = Modifier.width(8.dp))
 
