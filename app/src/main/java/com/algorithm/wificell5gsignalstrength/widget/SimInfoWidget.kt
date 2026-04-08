@@ -53,7 +53,7 @@ class SimInfoWidget : GlanceAppWidget() {
         val simInfo = getSimInfo(context)
 
         val cardBg = ColorProvider(Color(ContextCompat.getColor(context, R.color.widget_card_bg)))
-        val whiteText = ColorProvider(Color(ContextCompat.getColor(context, R.color.widget_text_primary)))
+        val whiteText = ColorProvider(Color(ContextCompat.getColor(context, R.color.black)))
         val subText = ColorProvider(Color(ContextCompat.getColor(context, R.color.widget_text_secondary)))
 
         provideContent {

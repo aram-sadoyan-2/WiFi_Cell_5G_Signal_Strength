@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.algorithm.wificell5gsignalstrength.widget.SignalWidgetReceiver
+import com.algorithm.wificell5gsignalstrength.widget.SimInfoWidgetReceiver
 import com.algorithm.wificell5gsignalstrength.widget.SpeedTestWidgetReceiver
 import com.algorithm.wificell5gsignalstrength.widget.WidgetPinHelper
 
@@ -64,6 +65,11 @@ class SettingsActivity : ComponentActivity() {
             receiverClass = SpeedTestWidgetReceiver::class.java
         )
 
+        val simSupported = WidgetPinHelper.isPinSupported(
+            context = this,
+            receiverClass = SimInfoWidgetReceiver::class.java
+        )
+
         setContent {
             MaterialTheme {
                 Surface(
@@ -74,6 +80,7 @@ class SettingsActivity : ComponentActivity() {
                         onBackClick = { finish() },
                         signalSupported = signalSupported,
                         speedSupported = speedSupported,
+                        simSupported = simSupported,
                         onAddSignalWidget = {
                             val ok = WidgetPinHelper.requestPin(
                                 context = this,
@@ -85,6 +92,13 @@ class SettingsActivity : ComponentActivity() {
                             val ok = WidgetPinHelper.requestPin(
                                 context = this,
                                 receiverClass = SpeedTestWidgetReceiver::class.java
+                            )
+                            if (!ok) showManualMessage()
+                        },
+                        onAddSimWidget = {
+                            val ok = WidgetPinHelper.requestPin(
+                                context = this,
+                                receiverClass = SimInfoWidgetReceiver::class.java
                             )
                             if (!ok) showManualMessage()
                         }
@@ -100,8 +114,10 @@ private fun SettingsScreen(
     onBackClick: () -> Unit,
     signalSupported: Boolean,
     speedSupported: Boolean,
+    simSupported: Boolean,
     onAddSignalWidget: () -> Unit,
-    onAddSpeedWidget: () -> Unit
+    onAddSpeedWidget: () -> Unit,
+    onAddSimWidget: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -175,6 +191,20 @@ private fun SettingsScreen(
             buttonText = if (speedSupported) "Add Speed Widget" else "Show Manual Steps",
             onClick = onAddSpeedWidget,
             showManualSteps = !speedSupported
+        )
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        WidgetCard(
+            title = "SIM Info Widget",
+            description = if (simSupported) {
+                "Add the SIM info widget directly from the app."
+            } else {
+                "Direct add is not supported on this launcher."
+            },
+            buttonText = if (simSupported) "Add SIM Widget" else "Show Manual Steps",
+            onClick = onAddSimWidget,
+            showManualSteps = !simSupported
         )
     }
 }
