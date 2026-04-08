@@ -1,8 +1,5 @@
-@file:Suppress("COMPOSE_APPLIER_CALL_MISMATCH")
-
 package com.algorithm.wificell5gsignalstrength.ui
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,14 +9,12 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
@@ -28,7 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CellTower
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.NetworkWifi
 import androidx.compose.material.icons.outlined.Refresh
@@ -41,27 +36,23 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.min
+import com.algorithm.wificell5gsignalstrength.CellInfoPopupData
+import com.algorithm.wificell5gsignalstrength.NetworkInfoPopupData
+import com.algorithm.wificell5gsignalstrength.WifiInfoPopupData
 
 private val AppBg = Color(0xFFF1F1F1)
 private val HeaderGray = Color(0xFF8A8A8A)
@@ -70,16 +61,6 @@ private val BorderGray = Color(0xFFD7D7D7)
 private val DarkText = Color(0xFF111111)
 private val MutedText = Color(0xFF60656D)
 private val BlueAccent = Color(0xFF2C62F4)
-private val GoodGreen = Color(0xFF87F14D)
-private val GoodYellow = Color(0xFFF0D93A)
-private val GoodOrange = Color(0xFFF3A14B)
-private val BadRed = Color(0xFFFFA3A3)
-private val SpeedRingGray = Color(0xFF5F6672)
-private val SpeedRingDownload = Color(0xFF43D8C7)
-private val SpeedRingUpload = Color(0xFFC93EF3)
-private val GoBlue = Color(0xFF145EC8)
-private val GoBlue2 = Color(0xFF2B75D9)
-private val CyanStroke = Color(0xFF1CE5D2)
 
 @Composable
 fun WifiCellSignalScreen(
@@ -90,78 +71,102 @@ fun WifiCellSignalScreen(
     onSettingsClick: () -> Unit,
     openSettingsFromWidget: Boolean = false
 ) {
-    Column(
+    var popupData by remember { mutableStateOf<NetworkInfoPopupData?>(null) }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(AppBg)
-            .safeDrawingPadding()
-            .padding(horizontal = 12.dp, vertical = 12.dp)
     ) {
-        TopActionBar(
-            onRefresh = onRefresh,
-            onSettingsClick = onSettingsClick
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        BoxWithConstraints(
-            modifier = Modifier.weight(1f)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .safeDrawingPadding()
+                .padding(horizontal = 12.dp, vertical = 12.dp)
         ) {
-            val compact = maxWidth < 360.dp
+            TopActionBar(
+                onRefresh = onRefresh,
+                onSettingsClick = onSettingsClick
+            )
 
-            Column(modifier = Modifier.fillMaxSize()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(if (compact) 0.37f else 0.40f),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    WifiSignalCard(
-                        data = state.wifiCard,
-                        modifier = Modifier.weight(0.46f),
-                        compact = compact
-                    )
+            Spacer(modifier = Modifier.height(10.dp))
 
-                    SpeedTestPanel(
-                        state = state.speedTest,
-                        onGoClick = onGoClick,
-                        onCloseClick = onResetSpeedTest,
-                        modifier = Modifier.weight(0.54f),
+            BoxWithConstraints(
+                modifier = Modifier.weight(1f)
+            ) {
+                val compact = maxWidth < 360.dp
+
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(if (compact) 0.37f else 0.40f),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        WifiSignalCard(
+                            data = state.wifiCard,
+                            modifier = Modifier.weight(0.46f),
+                            compact = compact,
+                            onInfoClick = {
+                                popupData = state.wifiCard.infoPopup
+                            }
+                        )
+
+                        SpeedTestPanel(
+                            state = state.speedTest,
+                            onGoClick = onGoClick,
+                            onCloseClick = onResetSpeedTest,
+                            modifier = Modifier.weight(0.54f),
+                            compact = compact
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(if (compact) 0.25f else 0.24f),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        CellSignalCard(
+                            data = state.sim1,
+                            modifier = Modifier.weight(1f),
+                            compact = compact,
+                            onInfoClick = {
+                                popupData = state.sim1.infoPopup
+                            }
+                        )
+
+                        CellSignalCard(
+                            data = state.sim2,
+                            modifier = Modifier.weight(1f),
+                            compact = compact,
+                            onInfoClick = {
+                                popupData = state.sim2.infoPopup
+                            }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    ChannelInterferenceCard(
+                        data = state.channels,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(if (compact) 0.38f else 0.36f),
                         compact = compact
                     )
                 }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(if (compact) 0.25f else 0.24f),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    CellSignalCard(
-                        data = state.sim1,
-                        modifier = Modifier.weight(1f),
-                        compact = compact
-                    )
-                    CellSignalCard(
-                        data = state.sim2,
-                        modifier = Modifier.weight(1f),
-                        compact = compact
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                ChannelInterferenceCard(
-                    data = state.channels,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(if (compact) 0.38f else 0.36f),
-                    compact = compact
-                )
             }
+        }
+
+        if (popupData != null) {
+            NetworkInfoPopup(
+                data = popupData!!,
+                onClose = { popupData = null }
+            )
         }
     }
 }
@@ -211,7 +216,10 @@ private fun CircleGradientIconButton(
             .clip(CircleShape)
             .background(
                 brush = Brush.linearGradient(
-                    colors = listOf(Color(0xFFFF7F87), Color(0xFFD82CC9))
+                    colors = listOf(
+                        Color(0xFFFF7F87),
+                        Color(0xFFD82CC9)
+                    )
                 )
             ),
         contentAlignment = Alignment.Center
@@ -224,77 +232,61 @@ private fun CircleGradientIconButton(
 private fun WifiSignalCard(
     data: WifiCardData,
     modifier: Modifier = Modifier,
-    compact: Boolean
+    compact: Boolean,
+    onInfoClick: () -> Unit
 ) {
     NetworkCardFrame(
         modifier = modifier.fillMaxSize(),
         headerTitle = data.carrier,
-        headerLeading = {
-            Icon(
-                imageVector = Icons.Outlined.CellTower,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(if (compact) 14.dp else 15.dp)
-            )
-        },
-        headerCenter = {
-            Box(
-                modifier = Modifier
-                    .size(if (compact) 16.dp else 18.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF44E61F))
-                    .border(1.dp, Color(0xFF4CAF50), CircleShape)
-            )
-        },
-        headerTrailing = { HeaderInfoCapsuleSmall() }
-    ) {
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.NetworkWifi,
-                contentDescription = null,
-                tint = MutedText,
-                modifier = Modifier.size(if (compact) 20.dp else 22.dp)
-            )
-
-            Spacer(modifier = Modifier.width(6.dp))
-
-            Text(
-                text = data.title,
-                color = MutedText,
-                fontSize = if (compact) 10.sp else 11.sp,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Spacer(modifier = Modifier.width(6.dp))
-
-            Text(
-                text = data.band,
-                color = BlueAccent,
-                fontSize = if (compact) 10.sp else 11.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1
-            )
+        headerTrailing = {
+            HeaderInfoCapsuleSmall(onClick = onInfoClick)
         }
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.NetworkWifi,
+            contentDescription = null,
+            tint = MutedText,
+            modifier = Modifier.size(if (compact) 22.dp else 26.dp)
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = data.title,
+            color = MutedText,
+            fontSize = if (compact) 10.sp else 11.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Text(
+            text = data.band,
+            color = BlueAccent,
+            fontSize = if (compact) 10.sp else 11.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 1
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        QualityRow(quality = data.quality, compact = true)
+        Text(
+            text = "dBm ${data.dbm}",
+            color = DarkText,
+            fontSize = if (compact) 11.sp else 12.sp,
+            fontWeight = FontWeight.Bold
+        )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        CenterStatLineTiny("dBm", data.dbm.toString())
         Spacer(modifier = Modifier.height(2.dp))
-        CenterStatLineTiny(
-            label = if (data.linkSpeedMbps != null) "link" else "ping",
-            value = data.linkSpeedMbps?.let { "$it Mbps" } ?: "—"
+
+        Text(
+            text = data.linkSpeedMbps?.let { "link $it Mbps" } ?: "ping —",
+            color = MutedText,
+            fontSize = if (compact) 10.sp else 11.sp
         )
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -325,98 +317,58 @@ private fun WifiSignalCard(
 private fun CellSignalCard(
     data: CellSignalData,
     modifier: Modifier = Modifier,
-    compact: Boolean
+    compact: Boolean,
+    onInfoClick: () -> Unit
 ) {
     NetworkCardFrame(
         modifier = modifier.fillMaxSize(),
         headerTitle = data.carrier,
-        headerLeading = {
-            Icon(
-                imageVector = Icons.Outlined.CellTower,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(if (compact) 13.dp else 14.dp)
-            )
-        },
-        headerTrailing = { HeaderInfoCapsuleSmall() }
+        headerTrailing = {
+            HeaderInfoCapsuleSmall(onClick = onInfoClick)
+        }
     ) {
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.SignalCellularAlt,
-                contentDescription = null,
-                tint = MutedText,
-                modifier = Modifier.size(if (compact) 17.dp else 18.dp)
-            )
-
-            Spacer(modifier = Modifier.width(5.dp))
-
-            Text(
-                text = data.title,
-                color = MutedText,
-                fontSize = if (compact) 9.sp else 10.sp,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Spacer(modifier = Modifier.width(4.dp))
-
-            Text(
-                text = "(${data.simLabel})",
-                color = DarkText,
-                fontSize = if (compact) 9.sp else 10.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1
-            )
-
-            Spacer(modifier = Modifier.width(4.dp))
-
-            Text(
-                text = data.networkType,
-                color = BlueAccent,
-                fontSize = if (compact) 10.sp else 11.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        QualityRow(quality = data.quality, compact = true)
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            StatBlockTiny("ASU", data.asu.toString())
-            StatBlockTiny("dBm", data.dbm.toString())
-        }
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        CenterStatLineTiny("ping", data.pingMs?.let { "$it mSec" } ?: "—")
-
-        Spacer(modifier = Modifier.height(7.dp))
-
         Text(
-            text = "Connected to cell tower",
+            text = data.title,
             color = MutedText,
-            fontSize = if (compact) 8.sp else 9.sp,
+            fontSize = if (compact) 9.sp else 10.sp,
+            fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
             maxLines = 1
         )
 
         Text(
-            text = "ID: ${data.towerId}",
+            text = "(${data.simLabel}) ${data.networkType}",
+            color = BlueAccent,
+            fontSize = if (compact) 10.sp else 11.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 1
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "ASU ${data.asu}",
+            color = DarkText,
+            fontSize = if (compact) 11.sp else 12.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(2.dp))
+
+        Text(
+            text = "dBm ${data.dbm}",
+            color = DarkText,
+            fontSize = if (compact) 11.sp else 12.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = "Tower ID: ${data.towerId}",
             color = HeaderGray,
             fontSize = if (compact) 10.sp else 11.sp,
             fontWeight = FontWeight.Bold,
@@ -436,88 +388,156 @@ private fun SpeedTestPanel(
     modifier: Modifier = Modifier,
     compact: Boolean
 ) {
-    if (state is SpeedCircleState.DownloadResult || state is SpeedCircleState.UploadResult) {
-        SpeedTestResultPanel(
-            state = state,
-            onCloseClick = onCloseClick,
-            modifier = modifier,
-            compact = compact
-        )
-        return
-    }
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+        when (state) {
+            SpeedCircleState.Idle -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "SPEEDTEST",
+                        color = MutedText,
+                        fontSize = if (compact) 15.sp else 17.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
 
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .size(if (compact) 96.dp else 120.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF145EC8))
+                            .clickable { onGoClick() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "GO",
+                            color = Color.White,
+                            fontSize = if (compact) 22.sp else 28.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            is SpeedCircleState.Downloading -> {
+                CenterSpeedBox(
+                    title = "SPEEDTEST",
+                    value = state.downloadMbps.format1(),
+                    unit = "↓ Mbps",
+                    ping = state.pingMs,
+                    compact = compact
+                )
+            }
+
+            is SpeedCircleState.Uploading -> {
+                CenterSpeedBox(
+                    title = "SPEEDTEST",
+                    value = state.uploadMbps.format1(),
+                    unit = "↑ Mbps",
+                    ping = state.pingMs,
+                    compact = compact
+                )
+            }
+
+            is SpeedCircleState.DownloadResult -> {
+                ResultSpeedBox(
+                    title = "SPEEDTEST",
+                    download = state.downloadMbps.format1(),
+                    upload = "—",
+                    ping = state.pingMs,
+                    compact = compact,
+                    onCloseClick = onCloseClick
+                )
+            }
+
+            is SpeedCircleState.UploadResult -> {
+                ResultSpeedBox(
+                    title = "SPEEDTEST",
+                    download = "—",
+                    upload = state.uploadMbps.format1(),
+                    ping = state.pingMs,
+                    compact = compact,
+                    onCloseClick = onCloseClick
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CenterSpeedBox(
+    title: String,
+    value: String,
+    unit: String,
+    ping: Int,
+    compact: Boolean
+) {
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "SPEEDTEST",
+            text = title,
             color = MutedText,
             fontSize = if (compact) 15.sp else 17.sp,
             fontWeight = FontWeight.SemiBold
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
-        SpeedCircle(
-            progress = when (state) {
-                SpeedCircleState.Idle -> 0f
-                is SpeedCircleState.Downloading -> 0.45f
-                is SpeedCircleState.Uploading -> 0.78f
-                is SpeedCircleState.DownloadResult -> 1f
-                is SpeedCircleState.UploadResult -> 1f
-            },
-            state = state,
-            compact = compact,
-            onGoClick = onGoClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
+        Text(
+            text = value,
+            color = DarkText,
+            fontSize = if (compact) 32.sp else 40.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Text(
+            text = unit,
+            color = MutedText,
+            fontSize = if (compact) 13.sp else 15.sp
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Text(
+            text = "Ping $ping ms",
+            color = DarkText,
+            fontSize = if (compact) 14.sp else 16.sp,
+            fontWeight = FontWeight.Bold
         )
     }
 }
 
 @Composable
-private fun SpeedTestResultPanel(
-    state: SpeedCircleState,
-    onCloseClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    compact: Boolean
+private fun ResultSpeedBox(
+    title: String,
+    download: String,
+    upload: String,
+    ping: Int,
+    compact: Boolean,
+    onCloseClick: () -> Unit
 ) {
-    val downloadValue = when (state) {
-        is SpeedCircleState.DownloadResult -> state.downloadMbps
-        is SpeedCircleState.UploadResult -> null
-        else -> null
-    }
-
-    val uploadValue = when (state) {
-        is SpeedCircleState.UploadResult -> state.uploadMbps
-        else -> null
-    }
-
-    val pingValue = when (state) {
-        is SpeedCircleState.DownloadResult -> state.pingMs
-        is SpeedCircleState.UploadResult -> state.pingMs
-        else -> 0
-    }
-
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = if (compact) 6.dp else 8.dp),
+                .padding(top = 0.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "SPEEDTEST",
+                text = title,
                 color = MutedText,
                 fontSize = if (compact) 16.sp else 18.sp,
                 fontWeight = FontWeight.SemiBold
             )
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(0.dp))
 
             Text(
                 text = "Download",
@@ -527,11 +547,10 @@ private fun SpeedTestResultPanel(
             )
 
             Text(
-                text = downloadValue?.format1() ?: "156.7",
+                text = download,
                 color = DarkText,
                 fontSize = if (compact) 34.sp else 40.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = if (compact) 32.sp else 38.sp
+                fontWeight = FontWeight.Bold
             )
 
             Text(
@@ -540,21 +559,20 @@ private fun SpeedTestResultPanel(
                 fontSize = if (compact) 14.sp else 16.sp
             )
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(0.dp))
 
             Text(
                 text = "Upload",
-                color = SpeedRingUpload,
+                color = Color(0xFFC93EF3),
                 fontSize = if (compact) 11.sp else 13.sp,
                 fontWeight = FontWeight.Medium
             )
 
             Text(
-                text = uploadValue?.format1() ?: "48.9",
+                text = upload,
                 color = DarkText,
                 fontSize = if (compact) 30.sp else 34.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = if (compact) 28.sp else 32.sp
+                fontWeight = FontWeight.Bold
             )
 
             Text(
@@ -563,28 +581,13 @@ private fun SpeedTestResultPanel(
                 fontSize = if (compact) 13.sp else 15.sp
             )
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(0.dp))
 
             Text(
-                text = buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            color = MutedText,
-                            fontSize = if (compact) 14.sp else 16.sp
-                        )
-                    ) {
-                        append("Ping ")
-                    }
-                    withStyle(
-                        style = SpanStyle(
-                            color = DarkText,
-                            fontSize = if (compact) 16.sp else 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ) {
-                        append("$pingValue ms")
-                    }
-                }
+                text = "Ping $ping ms",
+                color = DarkText,
+                fontSize = if (compact) 16.sp else 18.sp,
+                fontWeight = FontWeight.Bold
             )
         }
 
@@ -608,157 +611,6 @@ private fun SpeedTestResultPanel(
 }
 
 @Composable
-private fun SpeedCircle(
-    progress: Float,
-    state: SpeedCircleState,
-    compact: Boolean,
-    onGoClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val ringColor = when (state) {
-        is SpeedCircleState.Uploading -> SpeedRingUpload
-        else -> SpeedRingDownload
-    }
-
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val stroke = min(size.width, size.height) * 0.075f
-            val diameter = min(size.width, size.height) - stroke * 1.3f
-            val topLeft = Offset(
-                (size.width - diameter) / 2f,
-                (size.height - diameter) / 2f
-            )
-            val arcSize = Size(diameter, diameter)
-
-            drawArc(
-                color = SpeedRingGray,
-                startAngle = -130f,
-                sweepAngle = 360f,
-                useCenter = false,
-                topLeft = topLeft,
-                size = arcSize,
-                style = Stroke(width = stroke, cap = StrokeCap.Round)
-            )
-
-            drawArc(
-                color = ringColor,
-                startAngle = 130f,
-                sweepAngle = 360f * progress.coerceIn(0f, 1f),
-                useCenter = false,
-                topLeft = topLeft,
-                size = arcSize,
-                style = Stroke(width = stroke, cap = StrokeCap.Round)
-            )
-        }
-
-        when (state) {
-            SpeedCircleState.Idle -> {
-                Box(
-                    modifier = Modifier
-                        .size(if (compact) 96.dp else 120.dp)
-                        .clip(CircleShape)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(GoBlue2, GoBlue)
-                            )
-                        )
-                        .border(4.dp, CyanStroke, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    IconButton(
-                        onClick = onGoClick,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Text(
-                            text = "GO",
-                            color = Color.White,
-                            fontSize = if (compact) 22.sp else 28.sp
-                        )
-                    }
-                }
-            }
-
-            is SpeedCircleState.Downloading -> {
-                SpeedCenterMetric(
-                    value = state.downloadMbps.format1(),
-                    unit = "↓ Mbps",
-                    pingMs = state.pingMs,
-                    compact = compact
-                )
-            }
-
-            is SpeedCircleState.Uploading -> {
-                SpeedCenterMetric(
-                    value = state.uploadMbps.format1(),
-                    unit = "↑ Mbps",
-                    pingMs = state.pingMs,
-                    compact = compact
-                )
-            }
-
-            else -> Unit
-        }
-    }
-}
-
-private fun Float.format1(): String = String.format("%.1f", this)
-
-@Composable
-private fun SpeedCenterMetric(
-    value: String,
-    unit: String,
-    pingMs: Int,
-    compact: Boolean
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = if (compact) 12.dp else 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = value,
-            color = DarkText,
-            fontSize = if (compact) 32.sp else 44.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Text(
-            text = unit,
-            color = MutedText,
-            fontSize = if (compact) 13.sp else 16.sp,
-            fontWeight = FontWeight.Medium
-        )
-
-        Spacer(modifier = Modifier.height(if (compact) 14.dp else 22.dp))
-
-        Text(
-            text = buildAnnotatedString {
-                withStyle(
-                    style = SpanStyle(
-                        color = MutedText,
-                        fontSize = if (compact) 13.sp else 17.sp
-                    )
-                ) { append("Ping ") }
-                withStyle(
-                    style = SpanStyle(
-                        color = DarkText,
-                        fontSize = if (compact) 14.sp else 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                ) { append("$pingMs ms") }
-            }
-        )
-    }
-}
-
-@Composable
 private fun ChannelInterferenceCard(
     data: ChannelSectionData,
     modifier: Modifier = Modifier,
@@ -770,28 +622,13 @@ private fun ChannelInterferenceCard(
         colors = CardDefaults.cardColors(containerColor = HeaderGray),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.SignalCellularAlt,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(22.dp)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = "Wi-Fi Channel Interference",
-                color = Color.White,
-                fontSize = if (compact) 16.sp else 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = "Wi-Fi Channel Interference",
+            color = Color.White,
+            fontSize = if (compact) 16.sp else 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+        )
 
         LazyColumn(
             modifier = Modifier
@@ -861,7 +698,9 @@ private fun SectionCard(
         colors = CardDefaults.cardColors(containerColor = CardBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
             Text(
                 text = title,
                 color = DarkText,
@@ -875,18 +714,16 @@ private fun SectionCard(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ChannelRow(
     row: ChannelRowData,
     compact: Boolean
 ) {
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        FlowRow(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = row.channel,
                 color = BlueAccent,
@@ -894,7 +731,6 @@ private fun ChannelRow(
                 fontWeight = FontWeight.Bold,
                 maxLines = 1
             )
-
             Text(
                 text = row.name,
                 color = DarkText,
@@ -904,9 +740,6 @@ private fun ChannelRow(
                 overflow = TextOverflow.Ellipsis
             )
         }
-
-        Spacer(modifier = Modifier.width(6.dp))
-        QualityRow(quality = row.quality, compact = true)
     }
 }
 
@@ -914,8 +747,6 @@ private fun ChannelRow(
 private fun NetworkCardFrame(
     modifier: Modifier = Modifier,
     headerTitle: String,
-    headerLeading: @Composable (() -> Unit)? = null,
-    headerCenter: @Composable (() -> Unit)? = null,
     headerTrailing: @Composable (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -931,11 +762,6 @@ private fun NetworkCardFrame(
                 .padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (headerLeading != null) {
-                headerLeading()
-                Spacer(modifier = Modifier.width(6.dp))
-            }
-
             Text(
                 text = headerTitle,
                 color = Color.White,
@@ -946,12 +772,9 @@ private fun NetworkCardFrame(
                 overflow = TextOverflow.Ellipsis
             )
 
-            if (headerCenter != null) {
-                headerCenter()
-                Spacer(modifier = Modifier.width(6.dp))
+            if (headerTrailing != null) {
+                headerTrailing()
             }
-
-            if (headerTrailing != null) headerTrailing()
         }
 
         Card(
@@ -972,18 +795,21 @@ private fun NetworkCardFrame(
 }
 
 @Composable
-private fun HeaderInfoCapsuleSmall() {
+private fun HeaderInfoCapsuleSmall(
+    onClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .width(46.dp)
             .height(26.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFFEDEDED)),
+            .background(Color(0xFFEDEDED))
+            .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Outlined.Info,
-            contentDescription = null,
+            contentDescription = "Info",
             tint = Color.Black,
             modifier = Modifier.size(16.dp)
         )
@@ -991,97 +817,197 @@ private fun HeaderInfoCapsuleSmall() {
 }
 
 @Composable
-private fun QualityRow(
-    quality: SignalQuality,
-    compact: Boolean = false
-) {
-    val textSize = if (compact) 9.sp else 12.sp
-    val chipPaddingH = if (compact) 4.dp else 6.dp
-    val chipPaddingV = if (compact) 2.dp else 3.dp
-
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-        QualityWord("Poor", quality == SignalQuality.POOR, BadRed, textSize, chipPaddingH, chipPaddingV)
-        DotSeparator(textSize)
-        QualityWord(
-            "Good",
-            quality == SignalQuality.GOOD || quality == SignalQuality.OK_ORANGE,
-            if (quality == SignalQuality.OK_ORANGE) GoodOrange else GoodYellow,
-            textSize,
-            chipPaddingH,
-            chipPaddingV
-        )
-        DotSeparator(textSize)
-        QualityWord("Excellent", quality == SignalQuality.EXCELLENT, GoodGreen, textSize, chipPaddingH, chipPaddingV)
-    }
-}
-
-@Composable
-private fun QualityWord(
-    text: String,
-    selected: Boolean,
-    selectedColor: Color,
-    textSize: TextUnit,
-    paddingH: Dp,
-    paddingV: Dp
+private fun NetworkInfoPopup(
+    data: NetworkInfoPopupData,
+    onClose: () -> Unit
 ) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(if (selected) selectedColor else Color.Transparent)
-            .padding(horizontal = paddingH, vertical = paddingV)
+            .fillMaxSize()
+            .background(Color(0x66000000)),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            color = if (selected) Color.Black else MutedText,
-            fontSize = textSize,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 22.dp)
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(30.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF3F3F3)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(
+                        start = 26.dp,
+                        end = 26.dp,
+                        top = 24.dp,
+                        bottom = 26.dp
+                    )
+                ) {
+                    Text(
+                        text = data.title,
+                        color = HeaderGray,
+                        fontSize = 23.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(22.dp))
+
+                    when (data) {
+                        is WifiInfoPopupData -> WifiInfoPopupContent(data)
+                        is CellInfoPopupData -> CellInfoPopupContent(data)
+                    }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = (-6).dp, y = (-6).dp)
+                    .size(52.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF3F3F3))
+                    .border(3.dp, Color.Black, CircleShape)
+                    .clickable { onClose() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Close,
+                    contentDescription = "Close",
+                    tint = Color.Black,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun DotSeparator(textSize: TextUnit) {
-    Text(
-        text = " · ",
-        color = MutedText,
-        fontSize = textSize,
-        fontWeight = FontWeight.Bold
-    )
+private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.NetworkWifi,
+                contentDescription = null,
+                tint = MutedText,
+                modifier = Modifier.size(42.dp)
+            )
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Text(
+                text = data.wifiName,
+                color = DarkText,
+                fontSize = 25.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        InfoLine("Access Point", data.accessPoint)
+        InfoLine("Frequency", "${data.frequencyMHz} MHz")
+        InfoLine("Channel", data.channel.toString())
+        InfoLine("Linkspeed", data.linkSpeedMbps?.let { "$it Mbps" } ?: "—")
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = "Router",
+            color = DarkText,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        InfoLine("5 GHz Band", if (data.is5GHzSupported) "Supported" else "Not supported")
+        InfoLine("IP Address", data.ipAddress)
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = "MAC Address",
+            color = DarkText,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        InfoLine("Gateway", data.gateway)
+        InfoLine("Router MAC", data.routerMac)
+        InfoLine("DNS1", data.dns1)
+        InfoLine("DNS2", data.dns2)
+        InfoLine("DHCP Server", data.dhcpServer)
+    }
 }
 
 @Composable
-private fun CenterStatLineTiny(
+private fun CellInfoPopupContent(data: CellInfoPopupData) {
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.SignalCellularAlt,
+                contentDescription = null,
+                tint = MutedText,
+                modifier = Modifier.size(34.dp)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Text(
+                text = "${data.carrier} ${data.simLabel}",
+                color = DarkText,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        InfoLine("Network Type", data.networkType)
+        InfoLine("Signal", "${data.dbm} dBm")
+        InfoLine("ASU", data.asu.toString())
+        InfoLine("Quality", data.qualityLabel)
+        InfoLine("Operator", data.operatorName)
+        InfoLine("Country", data.countryIso)
+        InfoLine("Roaming", if (data.roaming) "Yes" else "No")
+    }
+}
+
+@Composable
+private fun InfoLine(
     label: String,
     value: String
 ) {
-    Text(
-        text = buildAnnotatedString {
-            withStyle(SpanStyle(color = MutedText, fontSize = 11.sp)) { append("$label ") }
-            withStyle(SpanStyle(color = Color.Black, fontSize = 14.sp, fontWeight = FontWeight.Bold)) {
-                append(value)
-            }
-        },
-        modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.Center,
-        maxLines = 1
-    )
-}
-
-@Composable
-private fun StatBlockTiny(label: String, value: String) {
-    Row(verticalAlignment = Alignment.Bottom) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp),
+        verticalAlignment = Alignment.Top
+    ) {
         Text(
             text = "$label ",
-            color = MutedText,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Medium
+            color = DarkText,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Normal
         )
+
         Text(
             text = value,
-            color = Color.Black,
-            fontSize = 13.sp,
+            color = DarkText,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold
         )
     }
 }
+private fun Float.format1(): String = String.format("%.1f", this)

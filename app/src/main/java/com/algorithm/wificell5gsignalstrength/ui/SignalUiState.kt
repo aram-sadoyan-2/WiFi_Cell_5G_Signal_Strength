@@ -1,87 +1,54 @@
 package com.algorithm.wificell5gsignalstrength.ui
 
 import androidx.compose.runtime.Immutable
+import com.algorithm.wificell5gsignalstrength.CellInfoPopupData
+import com.algorithm.wificell5gsignalstrength.WifiInfoPopupData
 
-@Immutable
+
 data class SignalUiState(
-    val wifiCard: WifiCardData = WifiCardData(
-        carrier = "Wi-Fi",
-        title = "WiFi Signal",
-        band = "Unknown",
-        quality = SignalQuality.POOR,
-        dbm = 0,
-        pingMs = null,
-        connectedTo = "Not connected",
-        linkSpeedMbps = null
-    ),
-    val sim1: CellSignalData = CellSignalData(
-        carrier = "Cellular",
-        title = "Cell Signal",
-        simLabel = "SIM 1",
-        networkType = "Unknown",
-        quality = SignalQuality.POOR,
-        asu = 0,
-        dbm = 0,
-        pingMs = null,
-        towerId = "—"
-    ),
-    val sim2: CellSignalData = CellSignalData(
-        carrier = "SIM 2",
-        title = "Cell Signal",
-        simLabel = "SIM 2",
-        networkType = "—",
-        quality = SignalQuality.POOR,
-        asu = 0,
-        dbm = 0,
-        pingMs = null,
-        towerId = "—"
-    ),
+    val wifiCard: WifiCardData = WifiCardData(),
+    val sim1: CellSignalData = CellSignalData(),
+    val sim2: CellSignalData = CellSignalData(),
     val speedTest: SpeedCircleState = SpeedCircleState.Idle,
-    val channels: ChannelSectionData = ChannelSectionData(
-        currentWifi = emptyList(),
-        interference = emptyList(),
-        otherNetworks = emptyList()
-    ),
+    val channels: ChannelSectionData = ChannelSectionData(),
     val activeTransportLabel: String = "Offline"
 )
 
-@Immutable
 data class WifiCardData(
-    val carrier: String,
-    val title: String,
-    val band: String,
-    val quality: SignalQuality,
-    val dbm: Int,
-    val pingMs: Int?,
-    val connectedTo: String,
-    val linkSpeedMbps: Int?
+    val carrier: String = "Wi-Fi",
+    val title: String = "WiFi Signal",
+    val band: String = "Unknown",
+    val quality: SignalQuality = SignalQuality.POOR,
+    val dbm: Int = 0,
+    val pingMs: Int? = null,
+    val connectedTo: String = "Not connected",
+    val linkSpeedMbps: Int? = null,
+    val infoPopup: WifiInfoPopupData? = null
 )
 
-@Immutable
 data class CellSignalData(
-    val carrier: String,
-    val title: String,
-    val simLabel: String,
-    val networkType: String,
-    val quality: SignalQuality,
-    val asu: Int,
-    val dbm: Int,
-    val pingMs: Int?,
-    val towerId: String
+    val carrier: String = "Cellular",
+    val title: String = "Cell Signal",
+    val simLabel: String = "SIM 1",
+    val networkType: String = "Unknown",
+    val quality: SignalQuality = SignalQuality.POOR,
+    val asu: Int = 0,
+    val dbm: Int = 0,
+    val pingMs: Int? = null,
+    val towerId: String = "—",
+    val infoPopup: CellInfoPopupData? = null
 )
 
-@Immutable
+data class ChannelSectionData(
+    val currentWifi: List<ChannelRowData> = emptyList(),
+    val interference: List<ChannelRowData> = emptyList(),
+    val otherNetworks: List<ChannelRowData> = emptyList()
+)
+
 data class ChannelRowData(
     val channel: String,
     val name: String,
     val quality: SignalQuality
-)
-
-@Immutable
-data class ChannelSectionData(
-    val currentWifi: List<ChannelRowData>,
-    val interference: List<ChannelRowData>,
-    val otherNetworks: List<ChannelRowData>
 )
 
 enum class SignalQuality {
@@ -90,6 +57,9 @@ enum class SignalQuality {
     EXCELLENT,
     OK_ORANGE
 }
+
+
+
 
 sealed interface SpeedCircleState {
     data object Idle : SpeedCircleState

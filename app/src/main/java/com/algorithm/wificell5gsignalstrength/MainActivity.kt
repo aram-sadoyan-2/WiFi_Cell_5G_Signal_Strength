@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.net.DhcpInfo
 import android.net.NetworkCapabilities
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
@@ -16,12 +17,12 @@ import android.os.Bundle
 import android.telephony.SignalStrength
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
+import android.text.format.Formatter
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.glance.appwidget.updateAll
@@ -61,8 +62,8 @@ class MainActivity : ComponentActivity() {
 
     private val realSpeedTester = RealSpeedTester()
 
-    private var uiState by mutableStateOf(SignalUiState())
-    private var speedTestState by mutableStateOf<SpeedCircleState>(SpeedCircleState.Idle)
+    private var uiState by androidx.compose.runtime.mutableStateOf(SignalUiState())
+    private var speedTestState by androidx.compose.runtime.mutableStateOf<SpeedCircleState>(SpeedCircleState.Idle)
 
     private var wifiReceiver: BroadcastReceiver? = null
     private var telephonyCallback: TelephonyCallback? = null
@@ -346,6 +347,26 @@ class MainActivity : ComponentActivity() {
             else -> wifiInfo?.linkSpeed ?: 0
         }.takeIf { it > 0 }
 
+        val wifiCardBase = WifiCardData(
+            carrier = if (isWifi) "Connected" else "Wi-Fi",
+            title = "WiFi Signal",
+            band = wifiBand,
+            quality = wifiQuality,
+            dbm = wifiRssi,
+            pingMs = null,
+            connectedTo = ssid,
+            linkSpeedMbps = linkSpeed
+        )
+
+        val wifiCard = wifiCardBase.copy(
+            infoPopup = buildWifiInfoPopup(
+                wifiInfo = wifiInfo,
+                ssid = ssid,
+                wifiFrequency = wifiFrequency,
+                linkSpeed = linkSpeed
+            )
+        )
+
         val cellSignal = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             latestSignalStrength?.cellSignalStrengths?.firstOrNull()
         } else {
@@ -368,6 +389,38 @@ class MainActivity : ComponentActivity() {
 
         val networkType = getSafeNetworkTypeLabel()
 
+        val sim1Base = CellSignalData(
+            carrier = carrierName,
+            title = "Cell Signal",
+            simLabel = "SIM 1",
+            networkType = networkType,
+            quality = cellQuality,
+            asu = cellAsu,
+            dbm = cellDbm,
+            pingMs = null,
+            towerId = "—"
+        )
+
+        val sim1 = sim1Base.copy(
+            infoPopup = buildCellInfoPopup(sim1Base)
+        )
+
+        val sim2Base = CellSignalData(
+            carrier = "SIM 2",
+            title = "Cell Signal",
+            simLabel = "SIM 2",
+            networkType = "—",
+            quality = SignalQuality.POOR,
+            asu = 0,
+            dbm = 0,
+            pingMs = null,
+            towerId = "—"
+        )
+
+        val sim2 = sim2Base.copy(
+            infoPopup = buildCellInfoPopup(sim2Base)
+        )
+
         val sortedScans = scanResults
             .sortedByDescending { it.level }
             .take(20)
@@ -385,41 +438,6 @@ class MainActivity : ComponentActivity() {
             .filterNot { sameSsid(it.SSID, ssid) }
             .filterNot { isOverlappingChannel(it.frequency, wifiFrequency) }
             .map { it.toChannelRow() }
-
-        val wifiCard = WifiCardData(
-            carrier = if (isWifi) "Connected" else "Wi-Fi",
-            title = "WiFi Signal",
-            band = wifiBand,
-            quality = wifiQuality,
-            dbm = wifiRssi,
-            pingMs = null,
-            connectedTo = ssid,
-            linkSpeedMbps = linkSpeed
-        )
-
-        val sim1 = CellSignalData(
-            carrier = carrierName,
-            title = "Cell Signal",
-            simLabel = "SIM 1",
-            networkType = networkType,
-            quality = cellQuality,
-            asu = cellAsu,
-            dbm = cellDbm,
-            pingMs = null,
-            towerId = "—"
-        )
-
-        val sim2 = CellSignalData(
-            carrier = "SIM 2",
-            title = "Cell Signal",
-            simLabel = "SIM 2",
-            networkType = "—",
-            quality = SignalQuality.POOR,
-            asu = 0,
-            dbm = 0,
-            pingMs = null,
-            towerId = "—"
-        )
 
         return SignalUiState(
             wifiCard = wifiCard,
@@ -440,6 +458,64 @@ class MainActivity : ComponentActivity() {
                 isCell -> "Cellular"
                 else -> "Offline"
             }
+        )
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun buildWifiInfoPopup(
+        wifiInfo: android.net.wifi.WifiInfo?,
+        ssid: String,
+        wifiFrequency: Int,
+        linkSpeed: Int?
+    ): WifiInfoPopupData {
+        val dhcpInfo: DhcpInfo? = runCatching { wifiManager.dhcpInfo }.getOrNull()
+
+        val ipAddress = dhcpInfo?.ipAddress?.toIpString() ?: "—"
+        val gateway = dhcpInfo?.gateway?.toIpString() ?: "—"
+        val dns1 = dhcpInfo?.dns1?.toIpString() ?: "—"
+        val dns2 = dhcpInfo?.dns2?.toIpString() ?: "—"
+        val dhcpServer = dhcpInfo?.serverAddress?.toIpString() ?: "—"
+
+        val routerMac = runCatching {
+            wifiManager.scanResults
+                .firstOrNull { it.SSID == ssid || "\"${it.SSID}\"" == wifiInfo?.ssid }
+                ?.BSSID
+        }.getOrNull() ?: wifiInfo?.bssid ?: "—"
+
+        return WifiInfoPopupData(
+            wifiName = ssid,
+            accessPoint = ssid,
+            frequencyMHz = wifiFrequency,
+            channel = frequencyToChannel(wifiFrequency),
+            linkSpeedMbps = linkSpeed,
+            is5GHzSupported = runCatching { wifiManager.is5GHzBandSupported }.getOrDefault(false),
+            ipAddress = ipAddress,
+            gateway = gateway,
+            routerMac = routerMac,
+            dns1 = dns1,
+            dns2 = dns2,
+            dhcpServer = dhcpServer
+        )
+    }
+
+    private fun buildCellInfoPopup(
+        data: CellSignalData
+    ): CellInfoPopupData {
+        return CellInfoPopupData(
+            carrier = data.carrier,
+            simLabel = data.simLabel,
+            networkType = data.networkType,
+            dbm = data.dbm,
+            asu = data.asu,
+            qualityLabel = when (data.quality) {
+                SignalQuality.POOR -> "Poor"
+                SignalQuality.GOOD -> "Good"
+                SignalQuality.EXCELLENT -> "Excellent"
+                SignalQuality.OK_ORANGE -> "Good"
+            },
+            operatorName = safeString(runCatching { telephonyManager.simOperatorName }.getOrNull()),
+            countryIso = safeString(runCatching { telephonyManager.simCountryIso }.getOrNull()).uppercase(),
+            roaming = runCatching { telephonyManager.isNetworkRoaming }.getOrDefault(false)
         )
     }
 
@@ -506,4 +582,11 @@ private fun frequencyToChannel(freq: Int): Int {
         freq in 5955..7115 -> (freq - 5950) / 5
         else -> 0
     }
+}
+
+@Suppress("DEPRECATION")
+private fun Int.toIpString(): String = Formatter.formatIpAddress(this)
+
+private fun safeString(value: String?): String {
+    return value?.takeIf { it.isNotBlank() } ?: "—"
 }
