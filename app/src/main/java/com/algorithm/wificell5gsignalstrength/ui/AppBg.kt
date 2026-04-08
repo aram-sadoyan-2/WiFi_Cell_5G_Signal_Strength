@@ -830,20 +830,20 @@ private fun NetworkInfoPopup(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 22.dp)
+                .padding(horizontal = 30.dp)
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(30.dp),
+                shape = RoundedCornerShape(26.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF3F3F3)),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(
-                        start = 26.dp,
-                        end = 26.dp,
-                        top = 24.dp,
-                        bottom = 26.dp
+                        start = 24.dp,
+                        end = 24.dp,
+                        top = 20.dp,
+                        bottom = 20.dp
                     )
                 ) {
                     Text(
@@ -855,7 +855,7 @@ private fun NetworkInfoPopup(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Spacer(modifier = Modifier.height(22.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     when (data) {
                         is WifiInfoPopupData -> WifiInfoPopupContent(data)
@@ -867,7 +867,7 @@ private fun NetworkInfoPopup(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 10.dp, end = 10.dp)
+                    .padding(top = 14.dp, end = 14.dp)
                     .size(42.dp)
                     .clip(CircleShape)
                     .background(Color(0xFFF3F3F3))
@@ -899,7 +899,7 @@ private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
                 modifier = Modifier.size(42.dp)
             )
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             Text(
                 text = data.wifiName,
@@ -909,14 +909,14 @@ private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
             )
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         InfoLine("Access Point", data.accessPoint)
         InfoLine("Frequency", "${data.frequencyMHz} MHz")
         InfoLine("Channel", data.channel.toString())
         InfoLine("Linkspeed", data.linkSpeedMbps?.let { "$it Mbps" } ?: "—")
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Text(
             text = "Router",
@@ -925,12 +925,12 @@ private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         InfoLine("5 GHz Band", if (data.is5GHzSupported) "Supported" else "Not supported")
         InfoLine("IP Address", data.ipAddress)
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Text(
             text = "MAC Address",
@@ -939,7 +939,7 @@ private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         InfoLine("Gateway", data.gateway)
         InfoLine("Router MAC", data.routerMac)
@@ -967,12 +967,12 @@ private fun CellInfoPopupContent(data: CellInfoPopupData) {
             Text(
                 text = "${data.carrier} ${data.simLabel}",
                 color = DarkText,
-                fontSize = 24.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         InfoLine("Network Type", data.networkType)
         InfoLine("Signal", "${data.dbm} dBm")
@@ -992,7 +992,7 @@ private fun InfoLine(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 3.dp),
+            .padding(vertical = 1.dp),
         verticalAlignment = Alignment.Top
     ) {
         Text(
