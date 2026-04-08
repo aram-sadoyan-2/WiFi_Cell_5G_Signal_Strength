@@ -867,11 +867,11 @@ private fun NetworkInfoPopup(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = (-6).dp, y = (-6).dp)
-                    .size(52.dp)
+                    .padding(top = 10.dp, end = 10.dp)
+                    .size(42.dp)
                     .clip(CircleShape)
                     .background(Color(0xFFF3F3F3))
-                    .border(3.dp, Color.Black, CircleShape)
+                    .border(2.dp, Color.Black, CircleShape)
                     .clickable { onClose() },
                 contentAlignment = Alignment.Center
             ) {
@@ -879,7 +879,7 @@ private fun NetworkInfoPopup(
                     imageVector = Icons.Outlined.Close,
                     contentDescription = "Close",
                     tint = Color.Black,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
