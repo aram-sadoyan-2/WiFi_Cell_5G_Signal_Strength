@@ -1,5 +1,6 @@
 package com.algorithm.wificell5gsignalstrength.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -11,10 +12,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
@@ -43,8 +44,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import com.algorithm.wificell5gsignalstrength.CellInfoPopupData
 import com.algorithm.wificell5gsignalstrength.NetworkInfoPopupData
 import com.algorithm.wificell5gsignalstrength.WifiInfoPopupData
+import kotlin.math.min
 
 private val AppBg = Color(0xFFF1F1F1)
 private val HeaderGray = Color(0xFF8A8A8A)
@@ -61,6 +67,13 @@ private val BorderGray = Color(0xFFD7D7D7)
 private val DarkText = Color(0xFF111111)
 private val MutedText = Color(0xFF60656D)
 private val BlueAccent = Color(0xFF2C62F4)
+
+private val SpeedRingGray = Color(0xFF5F6672)
+private val SpeedRingDownload = Color(0xFF43D8C7)
+private val SpeedRingUpload = Color(0xFFC93EF3)
+private val GoBlue = Color(0xFF145EC8)
+private val GoBlue2 = Color(0xFF2B75D9)
+private val CyanStroke = Color(0xFF1CE5D2)
 
 @Composable
 fun WifiCellSignalScreen(
@@ -108,9 +121,7 @@ fun WifiCellSignalScreen(
                             data = state.wifiCard,
                             modifier = Modifier.weight(0.46f),
                             compact = compact,
-                            onInfoClick = {
-                                popupData = state.wifiCard.infoPopup
-                            }
+                            onInfoClick = { popupData = state.wifiCard.infoPopup }
                         )
 
                         SpeedTestPanel(
@@ -134,18 +145,14 @@ fun WifiCellSignalScreen(
                             data = state.sim1,
                             modifier = Modifier.weight(1f),
                             compact = compact,
-                            onInfoClick = {
-                                popupData = state.sim1.infoPopup
-                            }
+                            onInfoClick = { popupData = state.sim1.infoPopup }
                         )
 
                         CellSignalCard(
                             data = state.sim2,
                             modifier = Modifier.weight(1f),
                             compact = compact,
-                            onInfoClick = {
-                                popupData = state.sim2.infoPopup
-                            }
+                            onInfoClick = { popupData = state.sim2.infoPopup }
                         )
                     }
 
@@ -162,9 +169,9 @@ fun WifiCellSignalScreen(
             }
         }
 
-        if (popupData != null) {
+        popupData?.let {
             NetworkInfoPopup(
-                data = popupData!!,
+                data = it,
                 onClose = { popupData = null }
             )
         }
@@ -238,9 +245,7 @@ private fun WifiSignalCard(
     NetworkCardFrame(
         modifier = modifier.fillMaxSize(),
         headerTitle = data.carrier,
-        headerTrailing = {
-            HeaderInfoCapsuleSmall(onClick = onInfoClick)
-        }
+        headerTrailing = { HeaderInfoCapsuleSmall(onClick = onInfoClick) }
     ) {
         Icon(
             imageVector = Icons.Outlined.NetworkWifi,
@@ -323,10 +328,17 @@ private fun CellSignalCard(
     NetworkCardFrame(
         modifier = modifier.fillMaxSize(),
         headerTitle = data.carrier,
-        headerTrailing = {
-            HeaderInfoCapsuleSmall(onClick = onInfoClick)
-        }
+        headerTrailing = { HeaderInfoCapsuleSmall(onClick = onInfoClick) }
     ) {
+        Icon(
+            imageVector = Icons.Rounded.SignalCellularAlt,
+            contentDescription = null,
+            tint = MutedText,
+            modifier = Modifier.size(if (compact) 20.dp else 24.dp)
+        )
+
+        //Spacer(modifier = Modifier.height(4.dp))
+
         Text(
             text = data.title,
             color = MutedText,
@@ -388,142 +400,208 @@ private fun SpeedTestPanel(
     modifier: Modifier = Modifier,
     compact: Boolean
 ) {
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
-        when (state) {
-            SpeedCircleState.Idle -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "SPEEDTEST",
-                        color = MutedText,
-                        fontSize = if (compact) 15.sp else 17.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .size(if (compact) 96.dp else 120.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF145EC8))
-                            .clickable { onGoClick() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "GO",
-                            color = Color.White,
-                            fontSize = if (compact) 22.sp else 28.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-
-            is SpeedCircleState.Downloading -> {
-                CenterSpeedBox(
-                    title = "SPEEDTEST",
-                    value = state.downloadMbps.format1(),
-                    unit = "↓ Mbps",
-                    ping = state.pingMs,
-                    compact = compact
-                )
-            }
-
-            is SpeedCircleState.Uploading -> {
-                CenterSpeedBox(
-                    title = "SPEEDTEST",
-                    value = state.uploadMbps.format1(),
-                    unit = "↑ Mbps",
-                    ping = state.pingMs,
-                    compact = compact
-                )
-            }
-
-            is SpeedCircleState.DownloadResult -> {
-                ResultSpeedBox(
-                    title = "SPEEDTEST",
-                    download = state.downloadMbps.format1(),
-                    upload = "—",
-                    ping = state.pingMs,
-                    compact = compact,
-                    onCloseClick = onCloseClick
-                )
-            }
-
-            is SpeedCircleState.UploadResult -> {
-                ResultSpeedBox(
-                    title = "SPEEDTEST",
-                    download = "—",
-                    upload = state.uploadMbps.format1(),
-                    ping = state.pingMs,
-                    compact = compact,
-                    onCloseClick = onCloseClick
-                )
-            }
-        }
+    if (state is SpeedCircleState.DownloadResult || state is SpeedCircleState.UploadResult) {
+        SpeedTestResultPanel(
+            state = state,
+            onCloseClick = onCloseClick,
+            modifier = modifier,
+            compact = compact
+        )
+        return
     }
-}
 
-@Composable
-private fun CenterSpeedBox(
-    title: String,
-    value: String,
-    unit: String,
-    ping: Int,
-    compact: Boolean
-) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = title,
+            text = "SPEEDTEST",
             color = MutedText,
             fontSize = if (compact) 15.sp else 17.sp,
             fontWeight = FontWeight.SemiBold
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
+        SpeedCircle(
+            progress = when (state) {
+                SpeedCircleState.Idle -> 0f
+                is SpeedCircleState.Downloading -> 0.45f
+                is SpeedCircleState.Uploading -> 0.78f
+                is SpeedCircleState.DownloadResult -> 1f
+                is SpeedCircleState.UploadResult -> 1f
+            },
+            state = state,
+            compact = compact,
+            onGoClick = onGoClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+        )
+    }
+}
+
+@Composable
+private fun SpeedCircle(
+    progress: Float,
+    state: SpeedCircleState,
+    compact: Boolean,
+    onGoClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val ringColor = when (state) {
+        is SpeedCircleState.Uploading -> SpeedRingUpload
+        else -> SpeedRingDownload
+    }
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val stroke = min(size.width, size.height) * 0.075f
+            val diameter = min(size.width, size.height) - stroke * 1.3f
+            val topLeft = Offset(
+                (size.width - diameter) / 2f,
+                (size.height - diameter) / 2f
+            )
+            val arcSize = Size(diameter, diameter)
+
+            drawArc(
+                color = SpeedRingGray,
+                startAngle = -130f,
+                sweepAngle = 360f,
+                useCenter = false,
+                topLeft = topLeft,
+                size = arcSize,
+                style = Stroke(width = stroke, cap = StrokeCap.Round)
+            )
+
+            drawArc(
+                color = ringColor,
+                startAngle = 130f,
+                sweepAngle = 360f * progress.coerceIn(0f, 1f),
+                useCenter = false,
+                topLeft = topLeft,
+                size = arcSize,
+                style = Stroke(width = stroke, cap = StrokeCap.Round)
+            )
+        }
+
+        when (state) {
+            SpeedCircleState.Idle -> {
+                Box(
+                    modifier = Modifier
+                        .size(if (compact) 96.dp else 120.dp)
+                        .clip(CircleShape)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(GoBlue2, GoBlue)
+                            )
+                        )
+                        .border(4.dp, CyanStroke, CircleShape)
+                        .clickable { onGoClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "GO",
+                        color = Color.White,
+                        fontSize = if (compact) 22.sp else 28.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            is SpeedCircleState.Downloading -> {
+                SpeedCenterMetric(
+                    value = state.downloadMbps.format1(),
+                    unit = "↓ Mbps",
+                    pingMs = state.pingMs,
+                    compact = compact
+                )
+            }
+
+            is SpeedCircleState.Uploading -> {
+                SpeedCenterMetric(
+                    value = state.uploadMbps.format1(),
+                    unit = "↑ Mbps",
+                    pingMs = state.pingMs,
+                    compact = compact
+                )
+            }
+
+            else -> Unit
+        }
+    }
+}
+
+@Composable
+private fun SpeedCenterMetric(
+    value: String,
+    unit: String,
+    pingMs: Int,
+    compact: Boolean
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = if (compact) 12.dp else 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
         Text(
             text = value,
             color = DarkText,
-            fontSize = if (compact) 32.sp else 40.sp,
+            fontSize = if (compact) 32.sp else 44.sp,
             fontWeight = FontWeight.Bold
         )
+
+        Spacer(modifier = Modifier.height(2.dp))
 
         Text(
             text = unit,
             color = MutedText,
-            fontSize = if (compact) 13.sp else 15.sp
+            fontSize = if (compact) 13.sp else 16.sp,
+            fontWeight = FontWeight.Medium
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(if (compact) 14.dp else 22.dp))
 
         Text(
-            text = "Ping $ping ms",
+            text = "Ping $pingMs ms",
             color = DarkText,
-            fontSize = if (compact) 14.sp else 16.sp,
+            fontSize = if (compact) 14.sp else 18.sp,
             fontWeight = FontWeight.Bold
         )
     }
 }
 
 @Composable
-private fun ResultSpeedBox(
-    title: String,
-    download: String,
-    upload: String,
-    ping: Int,
-    compact: Boolean,
-    onCloseClick: () -> Unit
+private fun SpeedTestResultPanel(
+    state: SpeedCircleState,
+    onCloseClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    compact: Boolean
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    val downloadValue = when (state) {
+        is SpeedCircleState.DownloadResult -> state.downloadMbps.format1()
+        else -> "—"
+    }
+
+    val uploadValue = when (state) {
+        is SpeedCircleState.UploadResult -> state.uploadMbps.format1()
+        else -> "—"
+    }
+
+    val pingValue = when (state) {
+        is SpeedCircleState.DownloadResult -> state.pingMs
+        is SpeedCircleState.UploadResult -> state.pingMs
+        else -> 0
+    }
+
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
         Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -531,13 +609,11 @@ private fun ResultSpeedBox(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = title,
+                text = "SPEEDTEST",
                 color = MutedText,
                 fontSize = if (compact) 16.sp else 18.sp,
                 fontWeight = FontWeight.SemiBold
             )
-
-            Spacer(modifier = Modifier.height(0.dp))
 
             Text(
                 text = "Download",
@@ -547,7 +623,7 @@ private fun ResultSpeedBox(
             )
 
             Text(
-                text = download,
+                text = downloadValue,
                 color = DarkText,
                 fontSize = if (compact) 34.sp else 40.sp,
                 fontWeight = FontWeight.Bold
@@ -559,17 +635,15 @@ private fun ResultSpeedBox(
                 fontSize = if (compact) 14.sp else 16.sp
             )
 
-            Spacer(modifier = Modifier.height(0.dp))
-
             Text(
                 text = "Upload",
-                color = Color(0xFFC93EF3),
+                color = SpeedRingUpload,
                 fontSize = if (compact) 11.sp else 13.sp,
                 fontWeight = FontWeight.Medium
             )
 
             Text(
-                text = upload,
+                text = uploadValue,
                 color = DarkText,
                 fontSize = if (compact) 30.sp else 34.sp,
                 fontWeight = FontWeight.Bold
@@ -581,10 +655,8 @@ private fun ResultSpeedBox(
                 fontSize = if (compact) 13.sp else 15.sp
             )
 
-            Spacer(modifier = Modifier.height(0.dp))
-
             Text(
-                text = "Ping $ping ms",
+                text = "Ping $pingValue ms",
                 color = DarkText,
                 fontSize = if (compact) 16.sp else 18.sp,
                 fontWeight = FontWeight.Bold
@@ -653,14 +725,18 @@ private fun ChannelInterferenceCard(
 
             item {
                 SectionCard(title = "Interference Channel", compact = compact) {
-                    data.interference.forEachIndexed { index, row ->
-                        ChannelRow(row, compact)
-                        if (index != data.interference.lastIndex) {
-                            HorizontalDivider(
-                                thickness = 1.dp,
-                                color = BorderGray,
-                                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
-                            )
+                    if (data.interference.isEmpty()) {
+                        EmptySectionText()
+                    } else {
+                        data.interference.forEachIndexed { index, row ->
+                            ChannelRow(row, compact)
+                            if (index != data.interference.lastIndex) {
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    color = BorderGray,
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -668,20 +744,33 @@ private fun ChannelInterferenceCard(
 
             item {
                 SectionCard(title = "Other Networks", compact = compact) {
-                    data.otherNetworks.forEachIndexed { index, row ->
-                        ChannelRow(row, compact)
-                        if (index != data.otherNetworks.lastIndex) {
-                            HorizontalDivider(
-                                thickness = 1.dp,
-                                color = BorderGray,
-                                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
-                            )
+                    if (data.otherNetworks.isEmpty()) {
+                        EmptySectionText()
+                    } else {
+                        data.otherNetworks.forEachIndexed { index, row ->
+                            ChannelRow(row, compact)
+                            if (index != data.otherNetworks.lastIndex) {
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    color = BorderGray,
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+                                )
+                            }
                         }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun EmptySectionText() {
+    Text(
+        text = "No networks found",
+        color = MutedText,
+        fontSize = 13.sp
+    )
 }
 
 @Composable
@@ -731,6 +820,7 @@ private fun ChannelRow(
                 fontWeight = FontWeight.Bold,
                 maxLines = 1
             )
+
             Text(
                 text = row.name,
                 color = DarkText,
@@ -772,9 +862,7 @@ private fun NetworkCardFrame(
                 overflow = TextOverflow.Ellipsis
             )
 
-            if (headerTrailing != null) {
-                headerTrailing()
-            }
+            headerTrailing?.invoke()
         }
 
         Card(
@@ -849,7 +937,7 @@ private fun NetworkInfoPopup(
                     Text(
                         text = data.title,
                         color = HeaderGray,
-                        fontSize = 23.sp,
+                        fontSize = 21.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
@@ -896,7 +984,7 @@ private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
                 imageVector = Icons.Outlined.NetworkWifi,
                 contentDescription = null,
                 tint = MutedText,
-                modifier = Modifier.size(42.dp)
+                modifier = Modifier.size(38.dp)
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -904,7 +992,7 @@ private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
             Text(
                 text = data.wifiName,
                 color = DarkText,
-                fontSize = 25.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
         }
@@ -921,7 +1009,7 @@ private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
         Text(
             text = "Router",
             color = DarkText,
-            fontSize = 18.sp,
+            fontSize = 17.sp,
             fontWeight = FontWeight.Bold
         )
 
@@ -935,7 +1023,7 @@ private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
         Text(
             text = "MAC Address",
             color = DarkText,
-            fontSize = 18.sp,
+            fontSize = 17.sp,
             fontWeight = FontWeight.Bold
         )
 
@@ -998,16 +1086,16 @@ private fun InfoLine(
         Text(
             text = "$label ",
             color = DarkText,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Normal
+            fontSize = 17.sp
         )
 
         Text(
             text = value,
             color = DarkText,
-            fontSize = 18.sp,
+            fontSize = 17.sp,
             fontWeight = FontWeight.Bold
         )
     }
 }
+
 private fun Float.format1(): String = String.format("%.1f", this)
