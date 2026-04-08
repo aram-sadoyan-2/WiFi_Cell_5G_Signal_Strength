@@ -55,6 +55,21 @@ class SettingsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        val signalAdded = WidgetInstallHelper.isWidgetAdded(
+            context = this,
+            receiverClass = SignalWidgetReceiver::class.java
+        )
+
+        val speedAdded = WidgetInstallHelper.isWidgetAdded(
+            context = this,
+            receiverClass = SpeedTestWidgetReceiver::class.java
+        )
+
+        val simAdded = WidgetInstallHelper.isWidgetAdded(
+            context = this,
+            receiverClass = SimInfoWidgetReceiver::class.java
+        )
+
         val signalSupported = WidgetPinHelper.isPinSupported(
             context = this,
             receiverClass = SignalWidgetReceiver::class.java
@@ -81,6 +96,9 @@ class SettingsActivity : ComponentActivity() {
                         signalSupported = signalSupported,
                         speedSupported = speedSupported,
                         simSupported = simSupported,
+                        signalAdded = signalAdded,
+                        speedAdded = speedAdded,
+                        simAdded = simAdded,
                         onAddSignalWidget = {
                             val ok = WidgetPinHelper.requestPin(
                                 context = this,
@@ -115,6 +133,9 @@ private fun SettingsScreen(
     signalSupported: Boolean,
     speedSupported: Boolean,
     simSupported: Boolean,
+    signalAdded: Boolean,
+    speedAdded: Boolean,
+    simAdded: Boolean,
     onAddSignalWidget: () -> Unit,
     onAddSpeedWidget: () -> Unit,
     onAddSimWidget: () -> Unit
@@ -169,42 +190,51 @@ private fun SettingsScreen(
 
         WidgetCard(
             title = "Signal Widget",
-            description = if (signalSupported) {
+            description = if (signalAdded) {
+                "This widget is already added to your home screen."
+            } else if (signalSupported) {
                 "Add the signal widget directly from the app."
             } else {
                 "Direct add is not supported on this launcher."
             },
-            buttonText = if (signalSupported) "Add Signal Widget" else "Show Manual Steps",
+            buttonText = if (signalAdded) "Added" else if (signalSupported) "Add Signal Widget" else "Show Manual Steps",
             onClick = onAddSignalWidget,
-            showManualSteps = !signalSupported
+            showManualSteps = !signalSupported,
+            isAlreadyAdded = signalAdded
         )
 
         Spacer(modifier = Modifier.height(14.dp))
 
         WidgetCard(
             title = "Speed Test Widget",
-            description = if (speedSupported) {
+            description = if (speedAdded) {
+                "This widget is already added to your home screen."
+            } else if (speedSupported) {
                 "Add the speed test widget directly from the app."
             } else {
                 "Direct add is not supported on this launcher."
             },
-            buttonText = if (speedSupported) "Add Speed Widget" else "Show Manual Steps",
+            buttonText = if (speedAdded) "Added" else if (speedSupported) "Add Speed Widget" else "Show Manual Steps",
             onClick = onAddSpeedWidget,
-            showManualSteps = !speedSupported
+            showManualSteps = !speedSupported,
+            isAlreadyAdded = speedAdded
         )
 
         Spacer(modifier = Modifier.height(14.dp))
 
         WidgetCard(
             title = "SIM Info Widget",
-            description = if (simSupported) {
+            description = if (simAdded) {
+                "This widget is already added to your home screen."
+            } else if (simSupported) {
                 "Add the SIM info widget directly from the app."
             } else {
                 "Direct add is not supported on this launcher."
             },
-            buttonText = if (simSupported) "Add SIM Widget" else "Show Manual Steps",
+            buttonText = if (simAdded) "Added" else if (simSupported) "Add SIM Widget" else "Show Manual Steps",
             onClick = onAddSimWidget,
-            showManualSteps = !simSupported
+            showManualSteps = !simSupported,
+            isAlreadyAdded = simAdded
         )
     }
 }
@@ -215,7 +245,8 @@ private fun WidgetCard(
     description: String,
     buttonText: String,
     onClick: () -> Unit,
-    showManualSteps: Boolean
+    showManualSteps: Boolean,
+    isAlreadyAdded: Boolean
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -250,15 +281,24 @@ private fun WidgetCard(
                 fontSize = 14.sp
             )
 
-            Button(
-                onClick = onClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C62F4)),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(text = buttonText, color = Color.White)
+            if (!isAlreadyAdded) {
+                Button(
+                    onClick = onClick,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C62F4)),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(text = buttonText, color = Color.White)
+                }
+            } else {
+                Text(
+                    text = "Already added",
+                    color = Color(0xFF1E8E3E),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
-            if (showManualSteps) {
+            if (showManualSteps && !isAlreadyAdded) {
                 Text(
                     text = "Manual way:",
                     color = Color(0xFF111111),
