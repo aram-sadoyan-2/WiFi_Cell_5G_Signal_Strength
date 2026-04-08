@@ -113,7 +113,7 @@ fun WifiCellSignalScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(if (compact) 0.37f else 0.40f),
+                            .weight(if (compact) 0.34f else 0.36f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.Top
                     ) {
@@ -138,7 +138,7 @@ fun WifiCellSignalScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(if (compact) 0.25f else 0.24f),
+                            .weight(if (compact) 0.26f else 0.25f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         CellSignalCard(
@@ -162,7 +162,7 @@ fun WifiCellSignalScreen(
                         data = state.channels,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(if (compact) 0.38f else 0.36f),
+                            .weight(if (compact) 0.40f else 0.39f),
                         compact = compact
                     )
                 }
@@ -874,7 +874,7 @@ private fun NetworkCardFrame(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                    .padding(horizontal = 14.dp).padding(top = 10.dp, bottom = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 content = content
             )
