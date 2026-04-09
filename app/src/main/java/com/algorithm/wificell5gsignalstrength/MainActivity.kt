@@ -15,6 +15,8 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.telephony.SignalStrength
+import android.telephony.SubscriptionInfo
+import android.telephony.SubscriptionManager
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
 import android.text.format.Formatter
@@ -401,10 +403,18 @@ class MainActivity : ComponentActivity() {
             towerId = "—"
         )
 
-        val sim1 = sim1Base.copy(
-            infoPopup = buildCellInfoPopup(sim1Base)
-        )
+        val activeSubs = getActiveSubscriptions()
 
+        val sim1Info = activeSubs.firstOrNull { it.simSlotIndex == 0 }
+        val sim2Info = activeSubs.firstOrNull { it.simSlotIndex == 1 }
+
+        val sim1 = sim1Info?.let {
+            buildCellSignalDataForSubscription(it, "SIM 1")
+        } ?: buildNoSimData("SIM 1")
+
+        val sim2 = sim2Info?.let {
+            buildCellSignalDataForSubscription(it, "SIM 2")
+        } ?: buildNoSimData("SIM 2")
         val sim2Base = CellSignalData(
             carrier = "SIM 2",
             title = "Cell Signal",
@@ -417,9 +427,6 @@ class MainActivity : ComponentActivity() {
             towerId = "—"
         )
 
-        val sim2 = sim2Base.copy(
-            infoPopup = buildCellInfoPopup(sim2Base)
-        )
 
         val sortedScans = scanResults
             .sortedByDescending { it.level }
@@ -461,6 +468,100 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+
+    @SuppressLint("MissingPermission")
+    private fun getActiveSubscriptions(): List<SubscriptionInfo> {
+        if (!hasPermission(Manifest.permission.READ_PHONE_STATE)) return emptyList()
+
+        val subscriptionManager =
+            getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+
+        return runCatching {
+            subscriptionManager.activeSubscriptionInfoList.orEmpty()
+        }.getOrDefault(emptyList())
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun buildCellSignalDataForSubscription(
+        subInfo: SubscriptionInfo,
+        simLabel: String
+    ): CellSignalData {
+        val telephonyForSub = telephonyManager.createForSubscriptionId(subInfo.subscriptionId)
+
+        val carrierName = subInfo.carrierName?.toString()
+            ?.takeIf { it.isNotBlank() }
+            ?: runCatching { telephonyForSub.simOperatorName }.getOrNull()
+                ?.takeIf { it.isNotBlank() }
+            ?: simLabel
+
+        val networkType = runCatching {
+            networkTypeLabel(telephonyForSub.dataNetworkType)
+        }.getOrElse {
+            runCatching { networkTypeLabel(telephonyForSub.networkType) }.getOrDefault("Unknown")
+        }
+
+        val signalStrength = runCatching { telephonyForSub.signalStrength }.getOrNull()
+
+        val cellSignal = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            signalStrength?.cellSignalStrengths?.firstOrNull()
+        } else {
+            null
+        }
+
+        val dbm = cellSignal?.dbm ?: 0
+        val asu = cellSignal?.asuLevel ?: 0
+        val quality = when (cellSignal?.level ?: 0) {
+            0 -> SignalQuality.POOR
+            1, 2 -> SignalQuality.GOOD
+            else -> SignalQuality.EXCELLENT
+        }
+
+        return CellSignalData(
+            carrier = carrierName,
+            title = "Cell Signal",
+            simLabel = simLabel,
+            networkType = networkType,
+            quality = quality,
+            asu = asu,
+            dbm = dbm,
+            pingMs = null,
+            towerId = "—"
+        )
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getSecondSimInfoOrNull(): SubscriptionInfo? {
+        if (!hasPermission(Manifest.permission.READ_PHONE_STATE)) return null
+
+        val subscriptionManager =
+            getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+
+        val activeSubs = runCatching {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                subscriptionManager.activeSubscriptionInfoList
+            } else {
+                @Suppress("DEPRECATION")
+                subscriptionManager.activeSubscriptionInfoList
+            }
+        }.getOrNull().orEmpty()
+
+        // slotIndex 0 = SIM 1, slotIndex 1 = SIM 2
+        return activeSubs.firstOrNull { it.simSlotIndex == 1 }
+    }
+
+    private fun buildNoSimData(simLabel: String): CellSignalData {
+        return CellSignalData(
+            carrier = "NO SIM",
+            title = "No SIM",
+            simLabel = simLabel,
+            networkType = "—",
+            quality = SignalQuality.POOR,
+            asu = 0,
+            dbm = 0,
+            pingMs = null,
+            towerId = "—"
+        )
+    }
     @SuppressLint("MissingPermission")
     private fun buildWifiInfoPopup(
         wifiInfo: android.net.wifi.WifiInfo?,
