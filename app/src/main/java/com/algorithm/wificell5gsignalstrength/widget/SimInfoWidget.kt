@@ -2,13 +2,11 @@ package com.algorithm.wificell5gsignalstrength.widget
 
 import android.Manifest
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -22,7 +20,7 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
-import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.color.ColorProvider
@@ -52,70 +50,8 @@ class SimInfoWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val simInfo = getSimInfo(context)
 
-        val cardBg = ColorProvider(Color(ContextCompat.getColor(context, R.color.widget_card_bg)))
-        val whiteText = ColorProvider(Color(ContextCompat.getColor(context, R.color.black)))
-        val subText = ColorProvider(Color(ContextCompat.getColor(context, R.color.widget_text_secondary)))
-
         provideContent {
-            Box(
-                modifier = GlanceModifier
-                    .fillMaxSize()
-                    .background(cardBg)
-                    .clickable(actionStartActivity(Intent(context, MainActivity::class.java)))
-                    .padding(horizontal = 14.dp, vertical = 12.dp)
-            ) {
-                Column(
-                    modifier = GlanceModifier.fillMaxSize(),
-                    verticalAlignment = Alignment.Vertical.CenterVertically,
-                    horizontalAlignment = Alignment.Horizontal.Start
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.Vertical.CenterVertically
-                    ) {
-                        Image(
-                            provider = ImageProvider(R.drawable.ic_sim_card),
-                            contentDescription = "SIM info",
-                            modifier = GlanceModifier.size(24.dp)
-                        )
-
-                        Spacer(modifier = GlanceModifier.width(10.dp))
-
-                        Column {
-                            Text(
-                                text = "SIM Info",
-                                style = TextStyle(
-                                    color = whiteText,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            )
-
-                            Spacer(modifier = GlanceModifier.height(2.dp))
-
-                            Text(
-                                text = simInfo.carrier,
-                                style = TextStyle(
-                                    color = subText,
-                                    fontSize = 12.sp
-                                )
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = GlanceModifier.height(12.dp))
-
-                    SimRow("Status", simInfo.state, subText, whiteText)
-                    Spacer(modifier = GlanceModifier.height(6.dp))
-
-                    SimRow("Network", simInfo.networkType, subText, whiteText)
-                    Spacer(modifier = GlanceModifier.height(6.dp))
-
-                    SimRow("Roaming", simInfo.roaming, subText, whiteText)
-                    Spacer(modifier = GlanceModifier.height(6.dp))
-
-                    SimRow("Country", simInfo.countryIso, subText, whiteText)
-                }
-            }
+            SimInfoWidgetContent(simInfo)
         }
     }
 }
@@ -132,6 +68,116 @@ private data class SimInfoUi(
     val countryIso: String
 )
 
+@Composable
+private fun SimInfoWidgetContent(simInfo: SimInfoUi) {
+    Box(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .cornerRadius(28.dp)
+            .background(ColorProvider(R.color.widget_bg))
+            .clickable(actionStartActivity<MainActivity>())
+            .padding(14.dp)
+    ) {
+        Column(
+            modifier = GlanceModifier.fillMaxSize()
+        ) {
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    provider = ImageProvider(R.drawable.ic_sim_card),
+                    contentDescription = "SIM",
+                    modifier = GlanceModifier.size(18.dp)
+                )
+
+                Spacer(modifier = GlanceModifier.width(8.dp))
+
+                Text(
+                    text = "SIM Info",
+                    style = TextStyle(
+                        color = ColorProvider(R.color.widget_white),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+            }
+
+            Spacer(modifier = GlanceModifier.height(14.dp))
+
+            Text(
+                text = simInfo.carrier,
+                style = TextStyle(
+                    color = ColorProvider(R.color.widget_white),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+
+            Spacer(modifier = GlanceModifier.height(4.dp))
+
+            Text(
+                text = simInfo.networkType,
+                style = TextStyle(
+                    color = ColorProvider(R.color.widget_quality_good),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            )
+
+            Spacer(modifier = GlanceModifier.height(12.dp))
+
+            SimRow(
+                label = "Status",
+                value = simInfo.state
+            )
+
+            Spacer(modifier = GlanceModifier.height(6.dp))
+
+            SimRow(
+                label = "Roaming",
+                value = simInfo.roaming
+            )
+
+            Spacer(modifier = GlanceModifier.height(6.dp))
+
+            SimRow(
+                label = "Country",
+                value = simInfo.countryIso
+            )
+        }
+    }
+}
+
+@Composable
+@GlanceComposable
+private fun SimRow(
+    label: String,
+    value: String
+) {
+    Row(
+        modifier = GlanceModifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "$label: ",
+            style = TextStyle(
+                color = ColorProvider(R.color.widget_secondary_text),
+                fontSize = 12.sp
+            )
+        )
+
+        Text(
+            text = value,
+            style = TextStyle(
+                color = ColorProvider(R.color.widget_white),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
+            )
+        )
+    }
+}
+
 private fun getSimInfo(context: Context): SimInfoUi {
     val telephonyManager =
         context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
@@ -144,7 +190,9 @@ private fun getSimInfo(context: Context): SimInfoUi {
 
     val carrierName = getCarrierName(context, telephonyManager, hasPhonePermission)
     val simState = simStateToText(telephonyManager.simState)
-    val networkType = networkTypeToText(telephonyManager.dataNetworkType)
+    val networkType = networkTypeToText(
+        runCatching { telephonyManager.dataNetworkType }.getOrDefault(TelephonyManager.NETWORK_TYPE_UNKNOWN)
+    )
     val roaming = if (telephonyManager.isNetworkRoaming) "On" else "Off"
     val countryIso = telephonyManager.simCountryIso
         ?.takeIf { it.isNotBlank() }
@@ -223,38 +271,6 @@ private fun networkTypeToText(type: Int): String {
         TelephonyManager.NETWORK_TYPE_TD_SCDMA -> "TD-SCDMA"
         TelephonyManager.NETWORK_TYPE_GSM -> "GSM"
         TelephonyManager.NETWORK_TYPE_IWLAN -> "IWLAN"
-        TelephonyManager.NETWORK_TYPE_UNKNOWN -> "--"
         else -> "--"
-    }
-}
-
-@Composable
-@GlanceComposable
-private fun SimRow(
-    label: String,
-    value: String,
-    labelColor: ColorProvider,
-    valueColor: ColorProvider
-) {
-    Row(
-        modifier = GlanceModifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Vertical.CenterVertically
-    ) {
-        Text(
-            text = "$label: ",
-            style = TextStyle(
-                color = labelColor,
-                fontSize = 12.sp
-            )
-        )
-
-        Text(
-            text = value,
-            style = TextStyle(
-                color = valueColor,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
-            )
-        )
     }
 }

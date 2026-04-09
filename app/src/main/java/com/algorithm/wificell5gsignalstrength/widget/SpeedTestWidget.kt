@@ -13,10 +13,12 @@ import androidx.glance.action.Action
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
+import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -27,6 +29,7 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
+import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -35,6 +38,9 @@ import com.algorithm.wificell5gsignalstrength.MainActivity
 import com.algorithm.wificell5gsignalstrength.R
 
 class SpeedTestWidget : GlanceAppWidget() {
+
+    override val sizeMode: SizeMode = SizeMode.Exact
+
     override suspend fun provideGlance(
         context: Context,
         id: GlanceId
@@ -78,81 +84,99 @@ private fun SpeedTestWidgetContent(
         modifier = GlanceModifier
             .fillMaxSize()
             .cornerRadius(28.dp)
-            .background(ColorProvider(R.color.widget_card_bg))
+            .background(ColorProvider(R.color.widget_bg))
             .clickable(onRunTestClick)
             .padding(14.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.TopStart
     ) {
         Column(
             modifier = GlanceModifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.Start
         ) {
             Row(
                 modifier = GlanceModifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Image(
+                    provider = ImageProvider(R.drawable.ic_widget_refresh),
+                    contentDescription = "Speed Test",
+                    modifier = GlanceModifier.size(18.dp)
+                )
+
+                Spacer(modifier = GlanceModifier.width(8.dp))
+
                 Text(
                     text = "SPEEDTEST",
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_secondary_text),
+                        color = ColorProvider(R.color.widget_white),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
                 )
-
-                Spacer(modifier = GlanceModifier.defaultWeight())
-
-                Image(
-                    provider = ImageProvider(R.drawable.ic_widget_refresh),
-                    contentDescription = "Run speed test",
-                    modifier = GlanceModifier.size(22.dp)
-                )
             }
 
-            Spacer(modifier = GlanceModifier.height(10.dp))
+            Spacer(modifier = GlanceModifier.height(16.dp))
 
             Text(
                 text = speed,
                 style = TextStyle(
-                    color = ColorProvider(R.color.widget_primary_text),
-                    fontSize = 26.sp,
+                    color = ColorProvider(R.color.widget_white),
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold
                 )
             )
+
+            Spacer(modifier = GlanceModifier.height(4.dp))
 
             Text(
                 text = unit,
                 style = TextStyle(
-                    color = ColorProvider(R.color.widget_secondary_text),
-                    fontSize = 14.sp
-                )
-            )
-
-            Spacer(modifier = GlanceModifier.height(8.dp))
-
-            Text(
-                text = "Ping $ping",
-                style = TextStyle(
-                    color = ColorProvider(R.color.widget_primary_text),
+                    color = ColorProvider(R.color.widget_quality_good),
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Medium
                 )
             )
 
-            Spacer(modifier = GlanceModifier.height(10.dp))
+            Spacer(modifier = GlanceModifier.height(12.dp))
+
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Ping",
+                    style = TextStyle(
+                        color = ColorProvider(R.color.widget_secondary_text),
+                        fontSize = 12.sp
+                    )
+                )
+
+                Spacer(modifier = GlanceModifier.width(8.dp))
+
+                Text(
+                    text = ping,
+                    style = TextStyle(
+                        color = ColorProvider(R.color.widget_white),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+            }
+
+            Spacer(modifier = GlanceModifier.height(14.dp))
 
             Box(
                 modifier = GlanceModifier
                     .fillMaxWidth()
                     .cornerRadius(16.dp)
-                    .background(ColorProvider(R.color.widget_button_bg))
+                    .background(ColorProvider(R.color.widget_card_bg))
                     .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "RUN TEST",
                     style = TextStyle(
-                        color = ColorProvider(R.color.widget_button_text),
+                        color = ColorProvider(R.color.widget_white),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )

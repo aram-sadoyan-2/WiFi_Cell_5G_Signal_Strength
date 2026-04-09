@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Widgets
@@ -246,6 +248,7 @@ private fun SettingsScreen(
             .fillMaxSize()
             .background(Color(0xFFF1F1F1))
             .safeDrawingPadding()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         Row(
