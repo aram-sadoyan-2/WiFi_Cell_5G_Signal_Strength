@@ -1,6 +1,7 @@
 package com.algorithm.wificell5gsignalstrength
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -27,7 +28,10 @@ class RealSpeedTester {
 
         private const val CONNECT_TIMEOUT_MS = 10_000
         private const val READ_TIMEOUT_MS = 20_000
-        private const val PROGRESS_INTERVAL_MS = 250L
+        private const val PROGRESS_INTERVAL_MS = 120L
+
+        private const val MIN_DOWNLOAD_STAGE_MS = 3_000L
+        private const val MIN_UPLOAD_STAGE_MS = 3_000L
     }
 
     suspend fun run(
@@ -36,14 +40,30 @@ class RealSpeedTester {
     ): RealSpeedTestResult = withContext(Dispatchers.IO) {
         val ping = measurePingMs()
 
+        val downloadStartMs = System.currentTimeMillis()
         val download = measureDownloadMbps(
             bytes = DOWNLOAD_BYTES,
             pingMs = ping,
             onProgress = onDownloadProgress
         )
+        ensureMinStageTime(
+            startedAtMs = downloadStartMs,
+            minDurationMs = MIN_DOWNLOAD_STAGE_MS,
+            finalMbps = download,
+            pingMs = ping,
+            onProgress = onDownloadProgress
+        )
 
+        val uploadStartMs = System.currentTimeMillis()
         val upload = measureUploadMbps(
             bytes = UPLOAD_BYTES,
+            pingMs = ping,
+            onProgress = onUploadProgress
+        )
+        ensureMinStageTime(
+            startedAtMs = uploadStartMs,
+            minDurationMs = MIN_UPLOAD_STAGE_MS,
+            finalMbps = upload,
             pingMs = ping,
             onProgress = onUploadProgress
         )
@@ -53,6 +73,27 @@ class RealSpeedTester {
             downloadMbps = download,
             uploadMbps = upload
         )
+    }
+
+    private suspend fun ensureMinStageTime(
+        startedAtMs: Long,
+        minDurationMs: Long,
+        finalMbps: Float,
+        pingMs: Int,
+        onProgress: (Float, Int) -> Unit
+    ) {
+        val elapsed = System.currentTimeMillis() - startedAtMs
+        val remaining = minDurationMs - elapsed
+        if (remaining <= 0L) return
+
+        val steps = (remaining / PROGRESS_INTERVAL_MS).coerceAtLeast(1L).toInt()
+        for (step in 1..steps) {
+            delay(PROGRESS_INTERVAL_MS)
+            val fraction = step.toFloat() / steps.toFloat()
+            onProgress(finalMbps * fraction, pingMs)
+        }
+
+        onProgress(finalMbps, pingMs)
     }
 
     private fun measurePingMs(): Int {
@@ -81,7 +122,7 @@ class RealSpeedTester {
             }
         }
 
-        return if (samples.isEmpty()) 0 else (samples.average().roundToInt())
+        return if (samples.isEmpty()) 0 else samples.average().roundToInt()
     }
 
     private fun measureDownloadMbps(
@@ -114,8 +155,7 @@ class RealSpeedTester {
                     val elapsedMs = (System.nanoTime() - startNs) / 1_000_000
                     if (elapsedMs - lastEmitMs >= PROGRESS_INTERVAL_MS) {
                         lastEmitMs = elapsedMs
-                        val mbps = bytesToMbps(totalBytes, elapsedMs)
-                        onProgress(mbps, pingMs)
+                        onProgress(bytesToMbps(totalBytes, elapsedMs), pingMs)
                     }
                 }
             }
@@ -162,8 +202,7 @@ class RealSpeedTester {
                     val elapsedMs = (System.nanoTime() - startNs) / 1_000_000
                     if (elapsedMs - lastEmitMs >= PROGRESS_INTERVAL_MS) {
                         lastEmitMs = elapsedMs
-                        val mbps = bytesToMbps(sentBytes, elapsedMs)
-                        onProgress(mbps, pingMs)
+                        onProgress(bytesToMbps(sentBytes, elapsedMs), pingMs)
                     }
                 }
                 output.flush()

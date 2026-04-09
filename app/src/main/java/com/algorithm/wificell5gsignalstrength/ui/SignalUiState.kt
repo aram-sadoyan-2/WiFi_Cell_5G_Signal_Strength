@@ -74,12 +74,8 @@ sealed interface SpeedCircleState {
         val pingMs: Int
     ) : SpeedCircleState
 
-    data class DownloadResult(
+    data class FinalResult(
         val downloadMbps: Float,
-        val pingMs: Int
-    ) : SpeedCircleState
-
-    data class UploadResult(
         val uploadMbps: Float,
         val pingMs: Int
     ) : SpeedCircleState

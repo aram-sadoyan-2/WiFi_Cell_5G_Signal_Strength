@@ -581,7 +581,7 @@ private fun SpeedTestPanel(
     modifier: Modifier = Modifier,
     compact: Boolean
 ) {
-    if (state is SpeedCircleState.DownloadResult || state is SpeedCircleState.UploadResult) {
+    if (state is SpeedCircleState.FinalResult) {
         SpeedTestResultPanel(
             state = state,
             onCloseClick = onCloseClick,
@@ -605,13 +605,6 @@ private fun SpeedTestPanel(
         Spacer(modifier = Modifier.height(6.dp))
 
         SpeedCircle(
-            progress = when (state) {
-                SpeedCircleState.Idle -> 0f
-                is SpeedCircleState.Downloading -> 0.45f
-                is SpeedCircleState.Uploading -> 0.78f
-                is SpeedCircleState.DownloadResult -> 1f
-                is SpeedCircleState.UploadResult -> 1f
-            },
             state = state,
             compact = compact,
             onGoClick = onGoClick,
@@ -624,12 +617,18 @@ private fun SpeedTestPanel(
 
 @Composable
 private fun SpeedCircle(
-    progress: Float,
     state: SpeedCircleState,
     compact: Boolean,
     onGoClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val progress = when (state) {
+        SpeedCircleState.Idle -> 0f
+        is SpeedCircleState.Downloading -> speedToProgress(state.downloadMbps)
+        is SpeedCircleState.Uploading -> speedToProgress(state.uploadMbps)
+        is SpeedCircleState.FinalResult -> 1f
+    }
+
     val ringColor = when (state) {
         is SpeedCircleState.Uploading -> SpeedRingUpload
         else -> SpeedRingDownload
@@ -650,7 +649,7 @@ private fun SpeedCircle(
 
             drawArc(
                 color = SpeedRingGray,
-                startAngle = -130f,
+                startAngle = -90f,
                 sweepAngle = 360f,
                 useCenter = false,
                 topLeft = topLeft,
@@ -658,15 +657,17 @@ private fun SpeedCircle(
                 style = Stroke(width = stroke, cap = StrokeCap.Round)
             )
 
-            drawArc(
-                color = ringColor,
-                startAngle = 130f,
-                sweepAngle = 360f * progress.coerceIn(0f, 1f),
-                useCenter = false,
-                topLeft = topLeft,
-                size = arcSize,
-                style = Stroke(width = stroke, cap = StrokeCap.Round)
-            )
+            if (progress > 0f) {
+                drawArc(
+                    color = ringColor,
+                    startAngle = -90f,
+                    sweepAngle = 360f * progress.coerceIn(0f, 1f),
+                    useCenter = false,
+                    topLeft = topLeft,
+                    size = arcSize,
+                    style = Stroke(width = stroke, cap = StrokeCap.Round)
+                )
+            }
         }
 
         when (state) {
@@ -695,8 +696,9 @@ private fun SpeedCircle(
 
             is SpeedCircleState.Downloading -> {
                 SpeedCenterMetric(
+                    label = "DOWNLOAD",
                     value = state.downloadMbps.format1(),
-                    unit = "↓ Mbps",
+                    unit = "Mbps",
                     pingMs = state.pingMs,
                     compact = compact
                 )
@@ -704,54 +706,58 @@ private fun SpeedCircle(
 
             is SpeedCircleState.Uploading -> {
                 SpeedCenterMetric(
+                    label = "UPLOAD",
                     value = state.uploadMbps.format1(),
-                    unit = "↑ Mbps",
+                    unit = "Mbps",
                     pingMs = state.pingMs,
                     compact = compact
                 )
             }
 
-            else -> Unit
+            is SpeedCircleState.FinalResult -> Unit
         }
     }
 }
 
 @Composable
 private fun SpeedCenterMetric(
+    label: String,
     value: String,
     unit: String,
     pingMs: Int,
     compact: Boolean
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = if (compact) 12.dp else 20.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(
+            text = label,
+            color = MutedText,
+            fontSize = if (compact) 10.sp else 12.sp,
+            fontWeight = FontWeight.Medium
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
         Text(
             text = value,
             color = DarkText,
-            fontSize = if (compact) 32.sp else 44.sp,
+            fontSize = if (compact) 30.sp else 42.sp,
             fontWeight = FontWeight.Bold
         )
-
-        Spacer(modifier = Modifier.height(2.dp))
 
         Text(
             text = unit,
             color = MutedText,
-            fontSize = if (compact) 13.sp else 16.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = if (compact) 12.sp else 15.sp
         )
 
-        Spacer(modifier = Modifier.height(if (compact) 14.dp else 22.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Text(
             text = "Ping $pingMs ms",
             color = DarkText,
-            fontSize = if (compact) 14.sp else 18.sp,
+            fontSize = if (compact) 13.sp else 16.sp,
             fontWeight = FontWeight.Bold
         )
     }
@@ -759,34 +765,16 @@ private fun SpeedCenterMetric(
 
 @Composable
 private fun SpeedTestResultPanel(
-    state: SpeedCircleState,
+    state: SpeedCircleState.FinalResult,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     compact: Boolean
 ) {
-    val downloadValue = when (state) {
-        is SpeedCircleState.DownloadResult -> state.downloadMbps.format1()
-        else -> "—"
-    }
-
-    val uploadValue = when (state) {
-        is SpeedCircleState.UploadResult -> state.uploadMbps.format1()
-        else -> "—"
-    }
-
-    val pingValue = when (state) {
-        is SpeedCircleState.DownloadResult -> state.pingMs
-        is SpeedCircleState.UploadResult -> state.pingMs
-        else -> 0
-    }
-
     Box(
         modifier = modifier.fillMaxSize()
     ) {
         Column(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 0.dp),
+            modifier = Modifier.align(Alignment.TopCenter),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -804,7 +792,7 @@ private fun SpeedTestResultPanel(
             )
 
             Text(
-                text = downloadValue,
+                text = state.downloadMbps.format1(),
                 color = DarkText,
                 fontSize = if (compact) 34.sp else 40.sp,
                 fontWeight = FontWeight.Bold
@@ -824,7 +812,7 @@ private fun SpeedTestResultPanel(
             )
 
             Text(
-                text = uploadValue,
+                text = state.uploadMbps.format1(),
                 color = DarkText,
                 fontSize = if (compact) 30.sp else 34.sp,
                 fontWeight = FontWeight.Bold
@@ -837,7 +825,7 @@ private fun SpeedTestResultPanel(
             )
 
             Text(
-                text = "Ping $pingValue ms",
+                text = "Ping ${state.pingMs} ms",
                 color = DarkText,
                 fontSize = if (compact) 16.sp else 18.sp,
                 fontWeight = FontWeight.Bold
@@ -1118,7 +1106,7 @@ private fun NetworkInfoPopup(
                     Text(
                         text = data.title,
                         color = HeaderGray,
-                        fontSize = 21.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()

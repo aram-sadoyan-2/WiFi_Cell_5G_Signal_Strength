@@ -204,7 +204,8 @@ class MainActivity : ComponentActivity() {
                     }
                 )
 
-                speedTestState = SpeedCircleState.UploadResult(
+                speedTestState = SpeedCircleState.FinalResult(
+                    downloadMbps = result.downloadMbps,
                     uploadMbps = result.uploadMbps,
                     pingMs = result.pingMs
                 )
