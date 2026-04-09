@@ -1,5 +1,8 @@
+@file:Suppress("COMPOSE_APPLIER_CALL_MISMATCH")
+
 package com.algorithm.wificell5gsignalstrength.ui
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -113,12 +116,13 @@ fun WifiCellSignalScreen(
                 modifier = Modifier.weight(1f)
             ) {
                 val compact = maxWidth < 360.dp
+                Log.d("dwd","compat = $compact")
 
                 Column(modifier = Modifier.fillMaxSize()) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(if (compact) 0.30f else 0.30f),
+                            .fillMaxWidth() //todo top
+                            .weight(if (compact) 0.44f else 0.38f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.Top
                     ) {
@@ -142,8 +146,8 @@ fun WifiCellSignalScreen(
 
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(if (compact) 0.3f else 0.3f),
+                            .fillMaxWidth() //todo middle
+                            .weight(if (compact) 0.44f else 0.38f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         CellSignalCard(
@@ -266,7 +270,7 @@ private fun WifiSignalCard(
                 modifier = Modifier.size(18.dp)
             )
 
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(4.dp))
 
             Text(
                 text = data.carrier,
@@ -280,13 +284,13 @@ private fun WifiSignalCard(
 
             Box(
                 modifier = Modifier
-                    .size(20.dp)
+                    .size(14.dp)
                     .clip(CircleShape)
                     .background(Color(0xFF44E61F))
                     .border(1.dp, Color(0xFF4CAF50), CircleShape)
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(if (compact) 4.dp else 6.dp))
 
             HeaderInfoCapsuleSmall(onClick = onInfoClick)
         }
@@ -300,7 +304,7 @@ private fun WifiSignalCard(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp).padding( top = 12.dp, bottom = 10.dp),
+                    .padding(horizontal = 10.dp).padding( top = 12.dp, bottom = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
@@ -338,6 +342,7 @@ private fun WifiSignalCard(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // todo Top Left Poor Good Excellent
                 QualityRow(
                     quality = data.quality,
                     compact = true
@@ -1064,8 +1069,8 @@ private fun HeaderInfoCapsuleSmall(
 ) {
     Box(
         modifier = Modifier
-            .width(46.dp)
-            .height(26.dp)
+            .width(40.dp)
+            .height(22.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(Color(0xFFEDEDED))
             .clickable { onClick() },
@@ -1075,7 +1080,7 @@ private fun HeaderInfoCapsuleSmall(
             imageVector = Icons.Outlined.Info,
             contentDescription = "Info",
             tint = Color.Black,
-            modifier = Modifier.size(16.dp)
+            modifier = Modifier.size(14.dp)
         )
     }
 }
@@ -1302,7 +1307,7 @@ fun QualityRow(
             text = "·",
             color = normalColor,
             fontSize = textSize,
-            modifier = Modifier.padding(horizontal = 6.dp)
+            modifier = Modifier.padding(horizontal = if (compact) 2.dp else 4.dp)
         )
 
         QualityItem(
@@ -1323,7 +1328,7 @@ fun QualityRow(
             text = "·",
             color = normalColor,
             fontSize = textSize,
-            modifier = Modifier.padding(horizontal = 6.dp)
+            modifier = Modifier.padding(horizontal = if (compact) 2.dp else 4.dp)
         )
 
         QualityItem(
