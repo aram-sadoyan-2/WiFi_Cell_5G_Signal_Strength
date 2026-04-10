@@ -1,4 +1,4 @@
-package com.algorithm.wificell5gsignalstrength.widget
+package com.algorithm.wificellgsignalstrength.widget
 
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName

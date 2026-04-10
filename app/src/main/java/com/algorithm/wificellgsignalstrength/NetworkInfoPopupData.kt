@@ -1,4 +1,4 @@
-package com.algorithm.wificell5gsignalstrength
+package com.algorithm.wificellgsignalstrength
 
 sealed interface NetworkInfoPopupData {
     val title: String

@@ -1,4 +1,4 @@
-package com.algorithm.wificell5gsignalstrength.ui
+package com.algorithm.wificellgsignalstrength.ui
 
 fun speedToProgress(mbps: Float): Float {
     val maxGaugeSpeed = 300f

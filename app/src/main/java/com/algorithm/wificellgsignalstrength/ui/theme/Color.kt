@@ -1,4 +1,4 @@
-package com.algorithm.wificell5gsignalstrength.ui.theme
+package com.algorithm.wificellgsignalstrength.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

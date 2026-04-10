@@ -1,4 +1,4 @@
-package com.algorithm.wificell5gsignalstrength.widget
+package com.algorithm.wificellgsignalstrength.widget
 
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 

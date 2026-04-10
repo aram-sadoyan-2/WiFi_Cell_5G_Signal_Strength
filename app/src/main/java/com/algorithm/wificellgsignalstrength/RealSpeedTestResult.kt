@@ -1,4 +1,4 @@
-package com.algorithm.wificell5gsignalstrength
+package com.algorithm.wificellgsignalstrength
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

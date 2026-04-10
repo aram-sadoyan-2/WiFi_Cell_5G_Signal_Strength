@@ -1,4 +1,4 @@
-package com.algorithm.wificell5gsignalstrength
+package com.algorithm.wificellgsignalstrength
 
 import android.os.Bundle
 import android.widget.Toast
@@ -44,10 +44,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.algorithm.wificell5gsignalstrength.widget.SignalWidgetReceiver
-import com.algorithm.wificell5gsignalstrength.widget.SimInfoWidgetReceiver
-import com.algorithm.wificell5gsignalstrength.widget.SpeedTestWidgetReceiver
-import com.algorithm.wificell5gsignalstrength.widget.WidgetPinHelper
+import com.algorithm.wificellgsignalstrength.widget.SignalWidgetReceiver
+import com.algorithm.wificellgsignalstrength.widget.SimInfoWidgetReceiver
+import com.algorithm.wificellgsignalstrength.widget.SpeedTestWidgetReceiver
+import com.algorithm.wificellgsignalstrength.widget.WidgetPinHelper
 
 class SettingsActivity : ComponentActivity() {
 

@@ -1,4 +1,4 @@
-package com.algorithm.wificell5gsignalstrength
+package com.algorithm.wificellgsignalstrength
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -29,20 +29,19 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
-import com.algorithm.wificell5gsignalstrength.ui.CellSignalData
-import com.algorithm.wificell5gsignalstrength.ui.ChannelRowData
-import com.algorithm.wificell5gsignalstrength.ui.ChannelSectionData
-import com.algorithm.wificell5gsignalstrength.ui.SignalQuality
-import com.algorithm.wificell5gsignalstrength.ui.SignalUiState
-import com.algorithm.wificell5gsignalstrength.ui.SpeedCircleState
-import com.algorithm.wificell5gsignalstrength.ui.WifiCardData
-import com.algorithm.wificell5gsignalstrength.ui.WifiCellSignalScreen
-import com.algorithm.wificell5gsignalstrength.widget.SpeedTestWidget
+import com.algorithm.wificellgsignalstrength.ui.CellSignalData
+import com.algorithm.wificellgsignalstrength.ui.ChannelRowData
+import com.algorithm.wificellgsignalstrength.ui.ChannelSectionData
+import com.algorithm.wificellgsignalstrength.ui.SignalQuality
+import com.algorithm.wificellgsignalstrength.ui.SignalUiState
+import com.algorithm.wificellgsignalstrength.ui.SpeedCircleState
+import com.algorithm.wificellgsignalstrength.ui.WifiCardData
+import com.algorithm.wificellgsignalstrength.ui.WifiCellSignalScreen
+import com.algorithm.wificellgsignalstrength.widget.SpeedTestWidget
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 class MainActivity : ComponentActivity() {
 

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.algorithm.wificell5gsignalstrength"
+    namespace = "com.algorithm.wificellgsignalstrength"
     compileSdk {
         version = release(36)
     }

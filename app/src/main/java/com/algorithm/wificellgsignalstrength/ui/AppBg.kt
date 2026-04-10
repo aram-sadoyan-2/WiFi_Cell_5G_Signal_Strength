@@ -1,8 +1,7 @@
 @file:Suppress("COMPOSE_APPLIER_CALL_MISMATCH")
 
-package com.algorithm.wificell5gsignalstrength.ui
+package com.algorithm.wificellgsignalstrength.ui
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -63,10 +62,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.algorithm.wificell5gsignalstrength.CellInfoPopupData
-import com.algorithm.wificell5gsignalstrength.NetworkInfoPopupData
-import com.algorithm.wificell5gsignalstrength.R
-import com.algorithm.wificell5gsignalstrength.WifiInfoPopupData
+import com.algorithm.wificellgsignalstrength.CellInfoPopupData
+import com.algorithm.wificellgsignalstrength.NetworkInfoPopupData
+import com.algorithm.wificellgsignalstrength.R
+import com.algorithm.wificellgsignalstrength.WifiInfoPopupData
 import kotlin.math.min
 
 private val AppBg = Color(0xFFF1F1F1)

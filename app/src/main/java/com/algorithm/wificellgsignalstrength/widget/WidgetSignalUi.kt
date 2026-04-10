@@ -1,4 +1,4 @@
-package com.algorithm.wificell5gsignalstrength.widget
+package com.algorithm.wificellgsignalstrength.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -16,7 +16,6 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -32,8 +31,8 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.algorithm.wificell5gsignalstrength.MainActivity
-import com.algorithm.wificell5gsignalstrength.R
+import com.algorithm.wificellgsignalstrength.MainActivity
+import com.algorithm.wificellgsignalstrength.R
 
 data class WidgetSignalUi(
     val title: String,

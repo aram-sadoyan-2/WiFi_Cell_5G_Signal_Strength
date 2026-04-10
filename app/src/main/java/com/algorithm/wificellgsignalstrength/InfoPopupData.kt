@@ -1,4 +1,4 @@
-package com.algorithm.wificell5gsignalstrength
+package com.algorithm.wificellgsignalstrength
 
 data class InfoPopupData(
     val title: String,

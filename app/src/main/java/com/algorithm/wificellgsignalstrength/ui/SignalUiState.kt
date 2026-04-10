@@ -1,8 +1,7 @@
-package com.algorithm.wificell5gsignalstrength.ui
+package com.algorithm.wificellgsignalstrength.ui
 
-import androidx.compose.runtime.Immutable
-import com.algorithm.wificell5gsignalstrength.CellInfoPopupData
-import com.algorithm.wificell5gsignalstrength.WifiInfoPopupData
+import com.algorithm.wificellgsignalstrength.CellInfoPopupData
+import com.algorithm.wificellgsignalstrength.WifiInfoPopupData
 
 
 data class SignalUiState(
