@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,7 +65,7 @@ class SettingsActivity : ComponentActivity() {
     private fun showManualMessage() {
         Toast.makeText(
             this,
-            "This launcher does not support adding widgets directly. Add it from Home Screen → Widgets.",
+            getString(R.string.widget_manual_add_toast),
             Toast.LENGTH_LONG
         ).show()
     }
@@ -120,15 +121,12 @@ class SettingsActivity : ComponentActivity() {
                 ) {
                     SettingsScreen(
                         onBackClick = { finish() },
-
                         signalSupported = signalSupported,
                         speedSupported = speedSupported,
                         simSupported = simSupported,
-
                         signalAdded = signalAdded,
                         speedAdded = speedAdded,
                         simAdded = simAdded,
-
                         onAddSignalWidget = {
                             val ok = WidgetPinHelper.requestPin(
                                 context = this,
@@ -150,11 +148,15 @@ class SettingsActivity : ComponentActivity() {
                             )
                             if (!ok) showManualMessage()
                         },
-
-                        onSignalRemoveHelp = { openRemoveDialog("Signal Widget") },
-                        onSpeedRemoveHelp = { openRemoveDialog("Speed Test Widget") },
-                        onSimRemoveHelp = { openRemoveDialog("SIM Info Widget") },
-
+                        onSignalRemoveHelp = {
+                            openRemoveDialog(getString(R.string.signal_widget_title))
+                        },
+                        onSpeedRemoveHelp = {
+                            openRemoveDialog(getString(R.string.speed_test_widget_title))
+                        },
+                        onSimRemoveHelp = {
+                            openRemoveDialog(getString(R.string.sim_info_widget_title))
+                        },
                         showRemoveDialog = showRemoveDialog,
                         removeDialogTitle = removeDialogTitle,
                         onDismissRemoveDialog = { showRemoveDialog = false }
@@ -173,23 +175,18 @@ class SettingsActivity : ComponentActivity() {
 @Composable
 private fun SettingsScreen(
     onBackClick: () -> Unit,
-
     signalSupported: Boolean,
     speedSupported: Boolean,
     simSupported: Boolean,
-
     signalAdded: Boolean,
     speedAdded: Boolean,
     simAdded: Boolean,
-
     onAddSignalWidget: () -> Unit,
     onAddSpeedWidget: () -> Unit,
     onAddSimWidget: () -> Unit,
-
     onSignalRemoveHelp: () -> Unit,
     onSpeedRemoveHelp: () -> Unit,
     onSimRemoveHelp: () -> Unit,
-
     showRemoveDialog: Boolean,
     removeDialogTitle: String,
     onDismissRemoveDialog: () -> Unit
@@ -207,23 +204,23 @@ private fun SettingsScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "To remove this widget from your home screen:",
+                        text = stringResource(R.string.remove_widget_title),
                         color = Color(0xFF111111),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "1. Go to your phone home screen",
+                        text = stringResource(R.string.remove_widget_step_1),
                         color = Color(0xFF60656D),
                         fontSize = 14.sp
                     )
                     Text(
-                        text = "2. Long press the widget",
+                        text = stringResource(R.string.remove_widget_step_2),
                         color = Color(0xFF60656D),
                         fontSize = 14.sp
                     )
                     Text(
-                        text = "3. Drag it to Remove, or tap Remove if your launcher shows that option",
+                        text = stringResource(R.string.remove_widget_step_3),
                         color = Color(0xFF60656D),
                         fontSize = 14.sp
                     )
@@ -232,7 +229,7 @@ private fun SettingsScreen(
             confirmButton = {
                 TextButton(onClick = onDismissRemoveDialog) {
                     Text(
-                        text = "OK",
+                        text = stringResource(R.string.ok),
                         color = Color(0xFF2C62F4),
                         fontWeight = FontWeight.Bold
                     )
@@ -266,13 +263,13 @@ private fun SettingsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.back),
                         tint = Color.Black,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.size(6.dp))
                     Text(
-                        text = "Back",
+                        text = stringResource(R.string.back),
                         color = Color.Black,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
@@ -284,7 +281,7 @@ private fun SettingsScreen(
         Spacer(modifier = Modifier.height(18.dp))
 
         Text(
-            text = "Settings",
+            text = stringResource(R.string.settings),
             color = Color(0xFF111111),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold
@@ -293,15 +290,17 @@ private fun SettingsScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         WidgetCard(
-            title = "Signal Widget",
-            description = if (signalAdded) {
-                "This widget is already added to your home screen."
-            } else if (signalSupported) {
-                "Add the signal widget directly from the app."
-            } else {
-                "Direct add is not supported on this launcher."
+            title = stringResource(R.string.signal_widget_title),
+            description = when {
+                signalAdded -> stringResource(R.string.widget_already_added_description)
+                signalSupported -> stringResource(R.string.signal_widget_direct_add_description)
+                else -> stringResource(R.string.widget_direct_add_not_supported)
             },
-            buttonText = if (signalSupported) "Add Signal Widget" else "Show Manual Steps",
+            buttonText = if (signalSupported) {
+                stringResource(R.string.add_signal_widget)
+            } else {
+                stringResource(R.string.show_manual_steps)
+            },
             onClick = onAddSignalWidget,
             showManualSteps = !signalSupported,
             isAlreadyAdded = signalAdded,
@@ -311,15 +310,17 @@ private fun SettingsScreen(
         Spacer(modifier = Modifier.height(14.dp))
 
         WidgetCard(
-            title = "Speed Test Widget",
-            description = if (speedAdded) {
-                "This widget is already added to your home screen."
-            } else if (speedSupported) {
-                "Add the speed test widget directly from the app."
-            } else {
-                "Direct add is not supported on this launcher."
+            title = stringResource(R.string.speed_test_widget_title),
+            description = when {
+                speedAdded -> stringResource(R.string.widget_already_added_description)
+                speedSupported -> stringResource(R.string.speed_widget_direct_add_description)
+                else -> stringResource(R.string.widget_direct_add_not_supported)
             },
-            buttonText = if (speedSupported) "Add Speed Widget" else "Show Manual Steps",
+            buttonText = if (speedSupported) {
+                stringResource(R.string.add_speed_widget)
+            } else {
+                stringResource(R.string.show_manual_steps)
+            },
             onClick = onAddSpeedWidget,
             showManualSteps = !speedSupported,
             isAlreadyAdded = speedAdded,
@@ -329,15 +330,17 @@ private fun SettingsScreen(
         Spacer(modifier = Modifier.height(14.dp))
 
         WidgetCard(
-            title = "SIM Info Widget",
-            description = if (simAdded) {
-                "This widget is already added to your home screen."
-            } else if (simSupported) {
-                "Add the SIM info widget directly from the app."
-            } else {
-                "Direct add is not supported on this launcher."
+            title = stringResource(R.string.sim_info_widget_title),
+            description = when {
+                simAdded -> stringResource(R.string.widget_already_added_description)
+                simSupported -> stringResource(R.string.sim_widget_direct_add_description)
+                else -> stringResource(R.string.widget_direct_add_not_supported)
             },
-            buttonText = if (simSupported) "Add SIM Widget" else "Show Manual Steps",
+            buttonText = if (simSupported) {
+                stringResource(R.string.add_sim_widget)
+            } else {
+                stringResource(R.string.show_manual_steps)
+            },
             onClick = onAddSimWidget,
             showManualSteps = !simSupported,
             isAlreadyAdded = simAdded,
@@ -402,7 +405,7 @@ private fun WidgetCard(
                 }
             } else {
                 Text(
-                    text = "Already added",
+                    text = stringResource(R.string.already_added),
                     color = Color(0xFF1E8E3E),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
@@ -414,7 +417,7 @@ private fun WidgetCard(
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Text(
-                        text = "How to remove",
+                        text = stringResource(R.string.how_to_remove),
                         color = Color(0xFF111111)
                     )
                 }
@@ -422,33 +425,33 @@ private fun WidgetCard(
 
             if (showManualSteps && !isAlreadyAdded) {
                 Text(
-                    text = "Manual way:",
+                    text = stringResource(R.string.manual_way),
                     color = Color(0xFF111111),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "1. Go to your phone home screen",
+                    text = stringResource(R.string.add_widget_step_1),
                     color = Color(0xFF60656D),
                     fontSize = 14.sp
                 )
                 Text(
-                    text = "2. Long press on empty area",
+                    text = stringResource(R.string.add_widget_step_2),
                     color = Color(0xFF60656D),
                     fontSize = 14.sp
                 )
                 Text(
-                    text = "3. Tap Widgets",
+                    text = stringResource(R.string.add_widget_step_3),
                     color = Color(0xFF60656D),
                     fontSize = 14.sp
                 )
                 Text(
-                    text = "4. Find WiFi Cell 5G Signal Strength",
+                    text = stringResource(R.string.add_widget_step_4),
                     color = Color(0xFF60656D),
                     fontSize = 14.sp
                 )
                 Text(
-                    text = "5. Drag the widget to the home screen",
+                    text = stringResource(R.string.add_widget_step_5_drag),
                     color = Color(0xFF60656D),
                     fontSize = 14.sp
                 )

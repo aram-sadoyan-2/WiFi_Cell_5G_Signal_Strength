@@ -1,5 +1,6 @@
 package com.algorithm.wificell5gsignalstrength.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
@@ -8,6 +9,7 @@ import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
@@ -34,11 +36,11 @@ import com.algorithm.wificell5gsignalstrength.MainActivity
 import com.algorithm.wificell5gsignalstrength.R
 
 data class WidgetSignalUi(
-    val title: String = "Wi-Fi",
-    val dbm: String = "-67 dBm",
-    val quality: String = "Excellent",
-    val band: String = "5 GHz",
-    val ping: String = "Ping 21 ms",
+    val title: String,
+    val dbm: String,
+    val quality: String,
+    val band: String,
+    val ping: String,
     val qualityColorRes: Int = R.color.widget_quality_good
 )
 
@@ -47,14 +49,36 @@ class SignalWidget : GlanceAppWidget() {
     override val sizeMode: SizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+
+        val prefs = context.getSharedPreferences("signal_widget_prefs", Context.MODE_PRIVATE)
+
+        val dbmInt = prefs.getInt("wifi_dbm", -67)
+        val pingInt = prefs.getInt("ping_ms", 21)
+        val band = prefs.getString("wifi_band", context.getString(R.string.band_5_ghz))
+            ?: context.getString(R.string.band_5_ghz)
+        val quality = prefs.getString("wifi_quality", context.getString(R.string.quality_excellent))
+            ?: context.getString(R.string.quality_excellent)
+
+        val data = WidgetSignalUi(
+            title = context.getString(R.string.wifi_label),
+            dbm = context.getString(R.string.widget_dbm_value, dbmInt),
+            quality = quality,
+            band = band,
+            ping = context.getString(R.string.ping_ms_value, pingInt),
+            qualityColorRes = R.color.widget_quality_good
+        )
+
         provideContent {
-            SignalWidgetContent(data = WidgetSignalUi())
+            SignalWidgetContent(data = data)
         }
     }
 }
 
+@SuppressLint("RestrictedApi")
 @Composable
 private fun SignalWidgetContent(data: WidgetSignalUi) {
+    val context = LocalContext.current
+
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -72,7 +96,7 @@ private fun SignalWidgetContent(data: WidgetSignalUi) {
             ) {
                 Image(
                     provider = ImageProvider(R.drawable.ic_widget_wifi),
-                    contentDescription = "Wi-Fi",
+                    contentDescription = context.getString(R.string.wifi_label),
                     modifier = GlanceModifier.size(18.dp)
                 )
 

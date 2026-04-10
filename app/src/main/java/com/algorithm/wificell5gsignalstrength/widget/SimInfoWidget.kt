@@ -1,6 +1,7 @@
 package com.algorithm.wificell5gsignalstrength.widget
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -15,6 +16,7 @@ import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
@@ -68,8 +70,11 @@ private data class SimInfoUi(
     val countryIso: String
 )
 
+@SuppressLint("RestrictedApi")
 @Composable
 private fun SimInfoWidgetContent(simInfo: SimInfoUi) {
+    val context = LocalContext.current
+
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -87,14 +92,14 @@ private fun SimInfoWidgetContent(simInfo: SimInfoUi) {
             ) {
                 Image(
                     provider = ImageProvider(R.drawable.ic_sim_card),
-                    contentDescription = "SIM",
+                    contentDescription = context.getString(R.string.sim_info),
                     modifier = GlanceModifier.size(18.dp)
                 )
 
                 Spacer(modifier = GlanceModifier.width(8.dp))
 
                 Text(
-                    text = "SIM Info",
+                    text = context.getString(R.string.sim_info),
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_white),
                         fontSize = 14.sp,
@@ -128,21 +133,21 @@ private fun SimInfoWidgetContent(simInfo: SimInfoUi) {
             Spacer(modifier = GlanceModifier.height(12.dp))
 
             SimRow(
-                label = "Status",
+                label = context.getString(R.string.status),
                 value = simInfo.state
             )
 
             Spacer(modifier = GlanceModifier.height(6.dp))
 
             SimRow(
-                label = "Roaming",
+                label = context.getString(R.string.roaming),
                 value = simInfo.roaming
             )
 
             Spacer(modifier = GlanceModifier.height(6.dp))
 
             SimRow(
-                label = "Country",
+                label = context.getString(R.string.country),
                 value = simInfo.countryIso
             )
         }
@@ -189,15 +194,21 @@ private fun getSimInfo(context: Context): SimInfoUi {
         ) == PackageManager.PERMISSION_GRANTED
 
     val carrierName = getCarrierName(context, telephonyManager, hasPhonePermission)
-    val simState = simStateToText(telephonyManager.simState)
+    val simState = simStateToText(context, telephonyManager.simState)
     val networkType = networkTypeToText(
-        runCatching { telephonyManager.dataNetworkType }.getOrDefault(TelephonyManager.NETWORK_TYPE_UNKNOWN)
+        context,
+        runCatching { telephonyManager.dataNetworkType }
+            .getOrDefault(TelephonyManager.NETWORK_TYPE_UNKNOWN)
     )
-    val roaming = if (telephonyManager.isNetworkRoaming) "On" else "Off"
+    val roaming = if (telephonyManager.isNetworkRoaming) {
+        context.getString(R.string.on)
+    } else {
+        context.getString(R.string.off)
+    }
     val countryIso = telephonyManager.simCountryIso
         ?.takeIf { it.isNotBlank() }
         ?.uppercase(Locale.getDefault())
-        ?: "--"
+        ?: context.getString(R.string.double_dash)
 
     return SimInfoUi(
         carrier = carrierName,
@@ -232,35 +243,36 @@ private fun getCarrierName(
         if (!firstCarrier.isNullOrBlank()) return firstCarrier
     }
 
-    return telephonyManager.simOperatorName.takeIf { it.isNotBlank() } ?: "No SIM"
+    return telephonyManager.simOperatorName.takeIf { it.isNotBlank() }
+        ?: context.getString(R.string.no_sim)
 }
 
-private fun simStateToText(state: Int): String {
+private fun simStateToText(context: Context, state: Int): String {
     return when (state) {
-        TelephonyManager.SIM_STATE_READY -> "Ready"
-        TelephonyManager.SIM_STATE_ABSENT -> "Absent"
-        TelephonyManager.SIM_STATE_PIN_REQUIRED -> "PIN required"
-        TelephonyManager.SIM_STATE_PUK_REQUIRED -> "PUK required"
-        TelephonyManager.SIM_STATE_NETWORK_LOCKED -> "Locked"
-        TelephonyManager.SIM_STATE_NOT_READY -> "Not ready"
-        TelephonyManager.SIM_STATE_PERM_DISABLED -> "Disabled"
-        TelephonyManager.SIM_STATE_CARD_IO_ERROR -> "I/O error"
-        TelephonyManager.SIM_STATE_CARD_RESTRICTED -> "Restricted"
-        else -> "Unknown"
+        TelephonyManager.SIM_STATE_READY -> context.getString(R.string.sim_state_ready)
+        TelephonyManager.SIM_STATE_ABSENT -> context.getString(R.string.sim_state_absent)
+        TelephonyManager.SIM_STATE_PIN_REQUIRED -> context.getString(R.string.sim_state_pin_required)
+        TelephonyManager.SIM_STATE_PUK_REQUIRED -> context.getString(R.string.sim_state_puk_required)
+        TelephonyManager.SIM_STATE_NETWORK_LOCKED -> context.getString(R.string.sim_state_locked)
+        TelephonyManager.SIM_STATE_NOT_READY -> context.getString(R.string.sim_state_not_ready)
+        TelephonyManager.SIM_STATE_PERM_DISABLED -> context.getString(R.string.sim_state_disabled)
+        TelephonyManager.SIM_STATE_CARD_IO_ERROR -> context.getString(R.string.sim_state_io_error)
+        TelephonyManager.SIM_STATE_CARD_RESTRICTED -> context.getString(R.string.sim_state_restricted)
+        else -> context.getString(R.string.unknown)
     }
 }
 
-private fun networkTypeToText(type: Int): String {
+private fun networkTypeToText(context: Context, type: Int): String {
     return when (type) {
         TelephonyManager.NETWORK_TYPE_GPRS -> "GPRS"
         TelephonyManager.NETWORK_TYPE_EDGE -> "EDGE"
-        TelephonyManager.NETWORK_TYPE_UMTS -> "3G"
+        TelephonyManager.NETWORK_TYPE_UMTS -> context.getString(R.string.network_3g)
         TelephonyManager.NETWORK_TYPE_HSDPA -> "HSDPA"
         TelephonyManager.NETWORK_TYPE_HSUPA -> "HSUPA"
         TelephonyManager.NETWORK_TYPE_HSPA -> "HSPA"
         TelephonyManager.NETWORK_TYPE_HSPAP -> "HSPA+"
         TelephonyManager.NETWORK_TYPE_LTE -> "LTE"
-        TelephonyManager.NETWORK_TYPE_NR -> "5G"
+        TelephonyManager.NETWORK_TYPE_NR -> context.getString(R.string.network_5g)
         TelephonyManager.NETWORK_TYPE_CDMA -> "CDMA"
         TelephonyManager.NETWORK_TYPE_EVDO_0 -> "EVDO"
         TelephonyManager.NETWORK_TYPE_EVDO_A -> "EVDO A"
@@ -271,6 +283,6 @@ private fun networkTypeToText(type: Int): String {
         TelephonyManager.NETWORK_TYPE_TD_SCDMA -> "TD-SCDMA"
         TelephonyManager.NETWORK_TYPE_GSM -> "GSM"
         TelephonyManager.NETWORK_TYPE_IWLAN -> "IWLAN"
-        else -> "--"
+        else -> context.getString(R.string.double_dash)
     }
 }

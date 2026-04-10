@@ -1,13 +1,11 @@
 <resources>
     <string name="app_name">WiFi Cell 5G Signal Strength</string>
 
-
     <string name="ping_label">Ping</string>
     <string name="ping_value">%1$d ms</string>
     <string name="ping_value_msec">%1$s mSec</string>
     <string name="mbps_down">↓ Mbps</string>
     <string name="mbps_up">↑ Mbps</string>
-
     <string name="wifi_signal">WiFi Signal</string>
     <string name="cell_signal">Cell Signal</string>
     <string name="lte_signal">LTE Signal</string>
@@ -17,18 +15,14 @@
     <string name="offline">Offline</string>
     <string name="not_connected">Not connected</string>
     <string name="unknown">Unknown</string>
-
     <string name="current">Current</string>
-
     <string name="sim_1">SIM 1</string>
     <string name="sim_2">SIM 2</string>
     <string name="sim_network_format">(%1$s) %2$s</string>
-
     <string name="refresh">Refresh</string>
     <string name="settings">Settings</string>
     <string name="info">Info</string>
     <string name="close">Close</string>
-
     <string name="speedtest">SPEEDTEST</string>
     <string name="go">GO</string>
     <string name="download">Download</string>
@@ -39,7 +33,6 @@
     <string name="download_mbps_compact">↓Mbps</string>
     <string name="upload_mbps_compact">↑Mbps</string>
     <string name="ping_ms_value">Ping %1$d ms</string>
-
     <string name="dbm_value">dBm %1$d</string>
     <string name="ping_msec_value">ping %1$d mSec</string>
     <string name="link_mbps_value">link %1$d Mbps</string>
@@ -47,23 +40,19 @@
     <string name="msec_value">%1$d mSec</string>
     <string name="mbps_value">%1$d Mbps</string>
     <string name="dbm_unit_value">%1$d dBm</string>
-
     <string name="connected_to">Connected to</string>
     <string name="connected_to_cell_tower">Connected to cell tower</string>
     <string name="tower_id">ID: %1$s</string>
     <string name="no_sim">NO SIM</string>
     <string name="sim_label_format">(%1$s)</string>
-
     <string name="asu_label_with_space">ASU </string>
     <string name="dbm_label_with_space">dBm </string>
     <string name="ping_label_with_space">ping </string>
-
     <string name="wifi_channel_interference">Wi-Fi Channel Interference</string>
     <string name="current_wifi">Current Wi-Fi</string>
     <string name="interference_channel">Interference Channel</string>
     <string name="other_networks">Other networks</string>
     <string name="no_networks_found">No networks found</string>
-
     <string name="access_point">Access Point</string>
     <string name="frequency">Frequency</string>
     <string name="frequency_mhz_value">%1$d MHz</string>
@@ -80,7 +69,6 @@
     <string name="dns1">DNS1</string>
     <string name="dns2">DNS2</string>
     <string name="dhcp_server">DHCP Server</string>
-
     <string name="carrier_sim_format">%1$s %2$s</string>
     <string name="network_type">Network Type</string>
     <string name="signal">Signal</string>
@@ -91,7 +79,6 @@
     <string name="roaming">Roaming</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-
     <string name="label_with_space">%1$s </string>
     <string name="quality_poor">Poor</string>
     <string name="quality_good">Good</string>
@@ -99,4 +86,58 @@
     <string name="middle_dot">·</string>
     <string name="dash">—</string>
     <string name="close_symbol">×</string>
+    <string name="no_sim_title">No SIM</string>
+    <string name="band_2_4_ghz">2.4 GHz</string>
+    <string name="band_5_ghz">5 GHz</string>
+    <string name="band_6_ghz">6 GHz</string>
+    <string name="network_2g">2G</string>
+    <string name="network_3g">3G</string>
+    <string name="network_4g_lte">4G LTE</string>
+    <string name="network_5g">5G</string>
+    <string name="channel_format">Channel %1$d</string>
+    <string name="hidden_network">&lt;hidden&gt;</string>
+    <string name="ms_value_short">%1$d ms</string>
+    <string name="widget_dbm_value">%1$d dBm</string>
+    <string name="run_test">RUN TEST</string>
+    <string name="sim_info">SIM Info</string>
+    <string name="status">Status</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="double_dash">--</string>
+    <string name="sim_state_ready">Ready</string>
+    <string name="sim_state_absent">Absent</string>
+    <string name="sim_state_pin_required">PIN required</string>
+    <string name="sim_state_puk_required">PUK required</string>
+    <string name="sim_state_locked">Locked</string>
+    <string name="sim_state_not_ready">Not ready</string>
+    <string name="sim_state_disabled">Disabled</string>
+    <string name="sim_state_io_error">I/O error</string>
+    <string name="sim_state_restricted">Restricted</string>
+    <string name="widget_manual_add_toast">This launcher does not support adding widgets directly. Add it from Home Screen → Widgets.</string>
+    <string name="signal_widget_title">Signal Widget</string>
+    <string name="speed_test_widget_title">Speed Test Widget</string>
+    <string name="sim_info_widget_title">SIM Info Widget</string>
+    <string name="widget_already_added_description">This widget is already added to your home screen.</string>
+    <string name="signal_widget_direct_add_description">Add the signal widget directly from the app.</string>
+    <string name="speed_widget_direct_add_description">Add the speed test widget directly from the app.</string>
+    <string name="sim_widget_direct_add_description">Add the SIM info widget directly from the app.</string>
+    <string name="widget_direct_add_not_supported">Direct add is not supported on this launcher.</string>
+    <string name="add_signal_widget">Add Signal Widget</string>
+    <string name="add_speed_widget">Add Speed Widget</string>
+    <string name="add_sim_widget">Add SIM Widget</string>
+    <string name="show_manual_steps">Show Manual Steps</string>
+    <string name="already_added">Already added</string>
+    <string name="how_to_remove">How to remove</string>
+    <string name="manual_way">Manual way:</string>
+    <string name="remove_widget_title">To remove this widget from your home screen:</string>
+    <string name="remove_widget_step_1">1. Go to your phone home screen</string>
+    <string name="remove_widget_step_2">2. Long press the widget</string>
+    <string name="remove_widget_step_3">3. Drag it to Remove, or tap Remove if your launcher shows that option</string>
+    <string name="add_widget_step_4">4. Find WiFi Cell 5G Signal Strength</string>
+    <string name="add_widget_step_1">1. Go to your phone home screen</string>
+    <string name="add_widget_step_2">2. Long press on empty area</string>
+    <string name="add_widget_step_3">3. Tap Widgets</string>
+    <string name="back">Back</string>
+    <string name="ok">OK</string>
+    <string name="add_widget_step_5_drag">5. Drag the widget to the home screen</string>
 </resources>

@@ -9,6 +9,7 @@ import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
 import androidx.glance.action.Action
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
@@ -48,8 +49,10 @@ class SpeedTestWidget : GlanceAppWidget() {
         val prefs = context.getSharedPreferences("speed_widget_prefs", Context.MODE_PRIVATE)
 
         val speed = prefs.getString("speed_value", "14.8") ?: "14.8"
-        val unit = prefs.getString("speed_unit", "Mbps") ?: "Mbps"
-        val ping = prefs.getString("ping_value", "16 ms") ?: "16 ms"
+        val unit = prefs.getString("speed_unit", context.getString(R.string.mbps))
+            ?: context.getString(R.string.mbps)
+        val ping = prefs.getString("ping_value", context.getString(R.string.ms_value_short, 16))
+            ?: context.getString(R.string.ms_value_short, 16)
 
         val openIntent = Intent(context, MainActivity::class.java).apply {
             putExtra(MainActivity.EXTRA_RUN_SPEED_TEST, true)
@@ -80,6 +83,8 @@ private fun SpeedTestWidgetContent(
     ping: String,
     onRunTestClick: Action
 ) {
+    val context = LocalContext.current
+
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -99,14 +104,14 @@ private fun SpeedTestWidgetContent(
             ) {
                 Image(
                     provider = ImageProvider(R.drawable.ic_widget_refresh),
-                    contentDescription = "Speed Test",
+                    contentDescription = context.getString(R.string.speedtest),
                     modifier = GlanceModifier.size(18.dp)
                 )
 
                 Spacer(modifier = GlanceModifier.width(8.dp))
 
                 Text(
-                    text = "SPEEDTEST",
+                    text = context.getString(R.string.speedtest),
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_white),
                         fontSize = 14.sp,
@@ -144,7 +149,7 @@ private fun SpeedTestWidgetContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Ping",
+                    text = context.getString(R.string.ping_label),
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_secondary_text),
                         fontSize = 12.sp
@@ -174,7 +179,7 @@ private fun SpeedTestWidgetContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "RUN TEST",
+                    text = context.getString(R.string.run_test),
                     style = TextStyle(
                         color = ColorProvider(R.color.widget_white),
                         fontSize = 13.sp,

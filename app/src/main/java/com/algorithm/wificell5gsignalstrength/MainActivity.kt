@@ -325,15 +325,15 @@ class MainActivity : ComponentActivity() {
             ?.removePrefix("\"")
             ?.removeSuffix("\"")
             ?.takeUnless { it.isBlank() || it == "<unknown ssid>" }
-            ?: "Not connected"
+            ?: getString(R.string.not_connected)
 
         val wifiRssi = wifiInfo?.rssi ?: -127
         val wifiFrequency = wifiInfo?.frequency ?: 0
         val wifiBand = when {
-            wifiFrequency in 2400..2500 -> "2.4 GHz"
-            wifiFrequency in 4900..5900 -> "5 GHz"
-            wifiFrequency in 5925..7125 -> "6 GHz"
-            else -> "Unknown"
+            wifiFrequency in 2400..2500 -> getString(R.string.band_2_4_ghz)
+            wifiFrequency in 4900..5900 -> getString(R.string.band_5_ghz)
+            wifiFrequency in 5925..7125 -> getString(R.string.band_6_ghz)
+            else -> getString(R.string.unknown)
         }
 
         val wifiLevel = WifiManager.calculateSignalLevel(wifiRssi, 5)
@@ -351,8 +351,8 @@ class MainActivity : ComponentActivity() {
         }.takeIf { it > 0 }
 
         val wifiCardBase = WifiCardData(
-            carrier = if (isWifi) "Connected" else "Wi-Fi",
-            title = "WiFi Signal",
+            carrier = if (isWifi) getString(R.string.connected) else getString(R.string.wifi_label),
+            title = getString(R.string.wifi_signal),
             band = wifiBand,
             quality = wifiQuality,
             dbm = wifiRssi,
@@ -388,46 +388,25 @@ class MainActivity : ComponentActivity() {
             telephonyManager.simOperatorName
         }.getOrNull()
             ?.takeIf { it.isNotBlank() }
-            ?: "Cellular"
+            ?: getString(R.string.cellular)
 
         val networkType = getSafeNetworkTypeLabel()
-
-        val sim1Base = CellSignalData(
-            carrier = carrierName,
-            title = "Cell Signal",
-            simLabel = "SIM 1",
-            networkType = networkType,
-            quality = cellQuality,
-            asu = cellAsu,
-            dbm = cellDbm,
-            pingMs = null,
-            towerId = "—"
-        )
 
         val activeSubs = getActiveSubscriptions()
 
         val sim1Info = activeSubs.firstOrNull { it.simSlotIndex == 0 }
         val sim2Info = activeSubs.firstOrNull { it.simSlotIndex == 1 }
 
+        val sim1Label = getString(R.string.sim_1)
+        val sim2Label = getString(R.string.sim_2)
+
         val sim1 = sim1Info?.let {
-            buildCellSignalDataForSubscription(it, "SIM 1")
-        } ?: buildNoSimData("SIM 1")
+            buildCellSignalDataForSubscription(it, sim1Label)
+        } ?: buildNoSimData(sim1Label)
 
         val sim2 = sim2Info?.let {
-            buildCellSignalDataForSubscription(it, "SIM 2")
-        } ?: buildNoSimData("SIM 2")
-        val sim2Base = CellSignalData(
-            carrier = "SIM 2",
-            title = "Cell Signal",
-            simLabel = "SIM 2",
-            networkType = "—",
-            quality = SignalQuality.POOR,
-            asu = 0,
-            dbm = 0,
-            pingMs = null,
-            towerId = "—"
-        )
-
+            buildCellSignalDataForSubscription(it, sim2Label)
+        } ?: buildNoSimData(sim2Label)
 
         val sortedScans = scanResults
             .sortedByDescending { it.level }
@@ -435,17 +414,17 @@ class MainActivity : ComponentActivity() {
 
         val currentWifiRows = sortedScans
             .filter { sameSsid(it.SSID, ssid) }
-            .map { it.toChannelRow() }
+            .map { it.toChannelRow(this) }
 
         val interferenceRows = sortedScans
             .filterNot { sameSsid(it.SSID, ssid) }
             .filter { isOverlappingChannel(it.frequency, wifiFrequency) }
-            .map { it.toChannelRow() }
+            .map { it.toChannelRow(this) }
 
         val otherRows = sortedScans
             .filterNot { sameSsid(it.SSID, ssid) }
             .filterNot { isOverlappingChannel(it.frequency, wifiFrequency) }
-            .map { it.toChannelRow() }
+            .map { it.toChannelRow(this) }
 
         return SignalUiState(
             wifiCard = wifiCard,
@@ -456,15 +435,21 @@ class MainActivity : ComponentActivity() {
                 currentWifi = if (currentWifiRows.isNotEmpty()) {
                     currentWifiRows
                 } else {
-                    listOf(ChannelRowData("Current", ssid, wifiQuality))
+                    listOf(
+                        ChannelRowData(
+                            getString(R.string.current),
+                            ssid,
+                            wifiQuality
+                        )
+                    )
                 },
                 interference = interferenceRows,
                 otherNetworks = otherRows
             ),
             activeTransportLabel = when {
-                isWifi -> "Wi-Fi"
-                isCell -> "Cellular"
-                else -> "Offline"
+                isWifi -> getString(R.string.wifi_label)
+                isCell -> getString(R.string.cellular)
+                else -> getString(R.string.offline)
             }
         )
     }
@@ -498,7 +483,8 @@ class MainActivity : ComponentActivity() {
         val networkType = runCatching {
             networkTypeLabel(telephonyForSub.dataNetworkType)
         }.getOrElse {
-            runCatching { networkTypeLabel(telephonyForSub.networkType) }.getOrDefault("Unknown")
+            runCatching { networkTypeLabel(telephonyForSub.networkType) }
+                .getOrDefault(getString(R.string.unknown))
         }
 
         val signalStrength = runCatching { telephonyForSub.signalStrength }.getOrNull()
@@ -519,14 +505,14 @@ class MainActivity : ComponentActivity() {
 
         val base = CellSignalData(
             carrier = carrierName,
-            title = "Cell Signal",
+            title = getString(R.string.cell_signal),
             simLabel = simLabel,
             networkType = networkType,
             quality = quality,
             asu = asu,
             dbm = dbm,
             pingMs = null,
-            towerId = "—"
+            towerId = getString(R.string.dash)
         )
 
         return base.copy(
@@ -556,15 +542,15 @@ class MainActivity : ComponentActivity() {
 
     private fun buildNoSimData(simLabel: String): CellSignalData {
         val base = CellSignalData(
-            carrier = "NO SIM",
-            title = "No SIM",
+            carrier = getString(R.string.no_sim),
+            title = getString(R.string.no_sim_title),
             simLabel = simLabel,
-            networkType = "—",
+            networkType = getString(R.string.dash),
             quality = SignalQuality.POOR,
             asu = 0,
             dbm = 0,
             pingMs = null,
-            towerId = "—"
+            towerId = getString(R.string.dash)
         )
 
         return base.copy(
@@ -580,17 +566,17 @@ class MainActivity : ComponentActivity() {
     ): WifiInfoPopupData {
         val dhcpInfo: DhcpInfo? = runCatching { wifiManager.dhcpInfo }.getOrNull()
 
-        val ipAddress = dhcpInfo?.ipAddress?.toIpString() ?: "—"
-        val gateway = dhcpInfo?.gateway?.toIpString() ?: "—"
-        val dns1 = dhcpInfo?.dns1?.toIpString() ?: "—"
-        val dns2 = dhcpInfo?.dns2?.toIpString() ?: "—"
-        val dhcpServer = dhcpInfo?.serverAddress?.toIpString() ?: "—"
+        val ipAddress = dhcpInfo?.ipAddress?.toIpString() ?: getString(R.string.dash)
+        val gateway = dhcpInfo?.gateway?.toIpString() ?: getString(R.string.dash)
+        val dns1 = dhcpInfo?.dns1?.toIpString() ?: getString(R.string.dash)
+        val dns2 = dhcpInfo?.dns2?.toIpString() ?: getString(R.string.dash)
+        val dhcpServer = dhcpInfo?.serverAddress?.toIpString() ?: getString(R.string.dash)
 
         val routerMac = runCatching {
             wifiManager.scanResults
                 .firstOrNull { it.SSID == ssid || "\"${it.SSID}\"" == wifiInfo?.ssid }
                 ?.BSSID
-        }.getOrNull() ?: wifiInfo?.bssid ?: "—"
+        }.getOrNull() ?: wifiInfo?.bssid ?: getString(R.string.dash)
 
         return WifiInfoPopupData(
             wifiName = ssid,
@@ -618,13 +604,13 @@ class MainActivity : ComponentActivity() {
             dbm = data.dbm,
             asu = data.asu,
             qualityLabel = when (data.quality) {
-                SignalQuality.POOR -> "Poor"
-                SignalQuality.GOOD -> "Good"
-                SignalQuality.EXCELLENT -> "Excellent"
-                SignalQuality.OK_ORANGE -> "Good"
+                SignalQuality.POOR -> getString(R.string.quality_poor)
+                SignalQuality.GOOD -> getString(R.string.quality_good)
+                SignalQuality.EXCELLENT -> getString(R.string.quality_excellent)
+                SignalQuality.OK_ORANGE -> getString(R.string.quality_good)
             },
-            operatorName = safeString(runCatching { telephonyManager.simOperatorName }.getOrNull()),
-            countryIso = safeString(runCatching { telephonyManager.simCountryIso }.getOrNull()).uppercase(),
+            operatorName = safeString(runCatching { telephonyManager.simOperatorName }.getOrNull(), this),
+            countryIso = safeString(runCatching { telephonyManager.simCountryIso }.getOrNull(), this).uppercase(),
             roaming = runCatching { telephonyManager.isNetworkRoaming }.getOrDefault(false)
         )
     }
@@ -632,7 +618,7 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("MissingPermission")
     private fun getSafeNetworkTypeLabel(): String {
         if (!hasPermission(Manifest.permission.READ_PHONE_STATE)) {
-            return "Unknown"
+            return getString(R.string.unknown)
         }
 
         val type = runCatching {
@@ -666,22 +652,22 @@ class MainActivity : ComponentActivity() {
 
     private fun networkTypeLabel(type: Int): String {
         return when (type) {
-            TelephonyManager.NETWORK_TYPE_NR -> "5G"
-            TelephonyManager.NETWORK_TYPE_LTE -> "4G LTE"
+            TelephonyManager.NETWORK_TYPE_NR -> getString(R.string.network_5g)
+            TelephonyManager.NETWORK_TYPE_LTE -> getString(R.string.network_4g_lte)
             TelephonyManager.NETWORK_TYPE_HSPAP,
             TelephonyManager.NETWORK_TYPE_HSPA,
             TelephonyManager.NETWORK_TYPE_HSDPA,
             TelephonyManager.NETWORK_TYPE_HSUPA,
-            TelephonyManager.NETWORK_TYPE_UMTS -> "3G"
+            TelephonyManager.NETWORK_TYPE_UMTS -> getString(R.string.network_3g)
             TelephonyManager.NETWORK_TYPE_EDGE,
             TelephonyManager.NETWORK_TYPE_GPRS,
-            TelephonyManager.NETWORK_TYPE_GSM -> "2G"
-            else -> "Unknown"
+            TelephonyManager.NETWORK_TYPE_GSM -> getString(R.string.network_2g)
+            else -> getString(R.string.unknown)
         }
     }
 }
 
-private fun ScanResult.toChannelRow(): ChannelRowData {
+private fun ScanResult.toChannelRow(context: Context): ChannelRowData {
     val quality = when {
         level <= -85 -> SignalQuality.POOR
         level <= -70 -> SignalQuality.OK_ORANGE
@@ -690,8 +676,8 @@ private fun ScanResult.toChannelRow(): ChannelRowData {
     }
 
     return ChannelRowData(
-        channel = "Channel ${frequencyToChannel(frequency)}",
-        name = SSID.ifBlank { "<hidden>" },
+        channel = context.getString(R.string.channel_format, frequencyToChannel(frequency)),
+        name = SSID.ifBlank { context.getString(R.string.hidden_network) },
         quality = quality
     )
 }
@@ -708,6 +694,6 @@ private fun frequencyToChannel(freq: Int): Int {
 @Suppress("DEPRECATION")
 private fun Int.toIpString(): String = Formatter.formatIpAddress(this)
 
-private fun safeString(value: String?): String {
-    return value?.takeIf { it.isNotBlank() } ?: "—"
+private fun safeString(value: String?, context: Context): String {
+    return value?.takeIf { it.isNotBlank() } ?: context.getString(R.string.dash)
 }
