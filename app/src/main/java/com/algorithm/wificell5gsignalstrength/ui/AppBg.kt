@@ -154,14 +154,20 @@ fun WifiCellSignalScreen(
                             data = state.sim1,
                             modifier = Modifier.weight(1f),
                             compact = compact,
-                            onInfoClick = { popupData = state.sim1.infoPopup }
+                            onInfoClick = {
+                                popupData = state.sim1.infoPopup
+                                Log.d("dwd","popupData sim1 == ${state.sim1.infoPopup}")
+                            }
                         )
 
                         CellSignalCard(
                             data = state.sim2,
                             modifier = Modifier.weight(1f),
                             compact = compact,
-                            onInfoClick = { popupData = state.sim2.infoPopup }
+                            onInfoClick = {
+                                popupData = state.sim2.infoPopup
+                                Log.d("dwd","popupData sim2 == ${state.sim2.infoPopup}")
+                            }
                         )
                     }
 
@@ -398,6 +404,8 @@ private fun CellSignalCard(
     compact: Boolean,
     onInfoClick: () -> Unit
 ) {
+    val showInfo = data.carrier != "NO SIM"
+
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(26.dp),
@@ -429,7 +437,9 @@ private fun CellSignalCard(
                 overflow = TextOverflow.Ellipsis
             )
 
-            HeaderInfoCapsuleSmall(onClick = onInfoClick)
+            if (showInfo) {
+                HeaderInfoCapsuleSmall(onClick = onInfoClick)
+            }
         }
 
         Card(

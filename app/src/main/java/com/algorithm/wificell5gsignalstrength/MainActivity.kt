@@ -517,7 +517,7 @@ class MainActivity : ComponentActivity() {
             else -> SignalQuality.EXCELLENT
         }
 
-        return CellSignalData(
+        val base = CellSignalData(
             carrier = carrierName,
             title = "Cell Signal",
             simLabel = simLabel,
@@ -527,6 +527,10 @@ class MainActivity : ComponentActivity() {
             dbm = dbm,
             pingMs = null,
             towerId = "—"
+        )
+
+        return base.copy(
+            infoPopup = buildCellInfoPopup(base)
         )
     }
 
@@ -551,7 +555,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun buildNoSimData(simLabel: String): CellSignalData {
-        return CellSignalData(
+        val base = CellSignalData(
             carrier = "NO SIM",
             title = "No SIM",
             simLabel = simLabel,
@@ -561,6 +565,10 @@ class MainActivity : ComponentActivity() {
             dbm = 0,
             pingMs = null,
             towerId = "—"
+        )
+
+        return base.copy(
+            infoPopup = buildCellInfoPopup(base)
         )
     }
     @SuppressLint("MissingPermission")
