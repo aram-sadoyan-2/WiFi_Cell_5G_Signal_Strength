@@ -903,7 +903,7 @@ private fun ChannelInterferenceCard(
             }
 
             item {
-                SectionCard(title = "Interference Channel", compact = compact) {
+                SectionCard(title = "Interference  Channel", compact = compact) {
                     if (data.interference.isEmpty()) {
                         EmptySectionText()
                     } else {
@@ -922,7 +922,7 @@ private fun ChannelInterferenceCard(
             }
 
             item {
-                SectionCard(title = "Other Networks", compact = compact) {
+                SectionCard(title = "Other networks", compact = compact) {
                     if (data.otherNetworks.isEmpty()) {
                         EmptySectionText()
                     } else {
@@ -991,7 +991,10 @@ private fun ChannelRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
                 text = row.channel,
                 color = BlueAccent,
@@ -999,6 +1002,8 @@ private fun ChannelRow(
                 fontWeight = FontWeight.Bold,
                 maxLines = 1
             )
+
+            Spacer(modifier = Modifier.width(8.dp))
 
             Text(
                 text = row.name,
@@ -1009,57 +1014,16 @@ private fun ChannelRow(
                 overflow = TextOverflow.Ellipsis
             )
         }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        QualityRow(
+            quality = row.quality,
+            compact = true
+        )
     }
 }
 
-@Composable
-private fun NetworkCardFrame(
-    modifier: Modifier = Modifier,
-    headerTitle: String,
-    headerTrailing: @Composable (() -> Unit)? = null,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(26.dp),
-        colors = CardDefaults.cardColors(containerColor = HeaderGray),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = headerTitle,
-                color = Color.White,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            headerTrailing?.invoke()
-        }
-
-        Card(
-            modifier = Modifier.fillMaxSize(),
-            shape = RoundedCornerShape(26.dp),
-            colors = CardDefaults.cardColors(containerColor = CardBg),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 14.dp).padding(top = 10.dp, bottom = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                content = content
-            )
-        }
-    }
-}
 
 @Composable
 private fun HeaderInfoCapsuleSmall(
@@ -1135,7 +1099,7 @@ private fun NetworkInfoPopup(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = 14.dp, end = 14.dp)
-                    .size(42.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
                     .background(Color(0xFFF3F3F3))
                     .border(2.dp, Color.Black, CircleShape)
@@ -1146,7 +1110,7 @@ private fun NetworkInfoPopup(
                     imageVector = Icons.Outlined.Close,
                     contentDescription = "Close",
                     tint = Color.Black,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
@@ -1234,7 +1198,7 @@ private fun CellInfoPopupContent(data: CellInfoPopupData) {
             Text(
                 text = "${data.carrier} ${data.simLabel}",
                 color = DarkText,
-                fontSize = 22.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
         }
