@@ -1,3 +1,102 @@
 <resources>
     <string name="app_name">WiFi Cell 5G Signal Strength</string>
+
+
+    <string name="ping_label">Ping</string>
+    <string name="ping_value">%1$d ms</string>
+    <string name="ping_value_msec">%1$s mSec</string>
+    <string name="mbps_down">↓ Mbps</string>
+    <string name="mbps_up">↑ Mbps</string>
+
+    <string name="wifi_signal">WiFi Signal</string>
+    <string name="cell_signal">Cell Signal</string>
+    <string name="lte_signal">LTE Signal</string>
+    <string name="connected">Connected</string>
+    <string name="wifi_label">Wi-Fi</string>
+    <string name="cellular">Cellular</string>
+    <string name="offline">Offline</string>
+    <string name="not_connected">Not connected</string>
+    <string name="unknown">Unknown</string>
+
+    <string name="current">Current</string>
+
+    <string name="sim_1">SIM 1</string>
+    <string name="sim_2">SIM 2</string>
+    <string name="sim_network_format">(%1$s) %2$s</string>
+
+    <string name="refresh">Refresh</string>
+    <string name="settings">Settings</string>
+    <string name="info">Info</string>
+    <string name="close">Close</string>
+
+    <string name="speedtest">SPEEDTEST</string>
+    <string name="go">GO</string>
+    <string name="download">Download</string>
+    <string name="upload">Upload</string>
+    <string name="download_upper">DOWNLOAD</string>
+    <string name="upload_upper">UPLOAD</string>
+    <string name="mbps">Mbps</string>
+    <string name="download_mbps_compact">↓Mbps</string>
+    <string name="upload_mbps_compact">↑Mbps</string>
+    <string name="ping_ms_value">Ping %1$d ms</string>
+
+    <string name="dbm_value">dBm %1$d</string>
+    <string name="ping_msec_value">ping %1$d mSec</string>
+    <string name="link_mbps_value">link %1$d Mbps</string>
+    <string name="ping_empty">ping —</string>
+    <string name="msec_value">%1$d mSec</string>
+    <string name="mbps_value">%1$d Mbps</string>
+    <string name="dbm_unit_value">%1$d dBm</string>
+
+    <string name="connected_to">Connected to</string>
+    <string name="connected_to_cell_tower">Connected to cell tower</string>
+    <string name="tower_id">ID: %1$s</string>
+    <string name="no_sim">NO SIM</string>
+    <string name="sim_label_format">(%1$s)</string>
+
+    <string name="asu_label_with_space">ASU </string>
+    <string name="dbm_label_with_space">dBm </string>
+    <string name="ping_label_with_space">ping </string>
+
+    <string name="wifi_channel_interference">Wi-Fi Channel Interference</string>
+    <string name="current_wifi">Current Wi-Fi</string>
+    <string name="interference_channel">Interference Channel</string>
+    <string name="other_networks">Other networks</string>
+    <string name="no_networks_found">No networks found</string>
+
+    <string name="access_point">Access Point</string>
+    <string name="frequency">Frequency</string>
+    <string name="frequency_mhz_value">%1$d MHz</string>
+    <string name="channel">Channel</string>
+    <string name="link_speed">Linkspeed</string>
+    <string name="router">Router</string>
+    <string name="band_5ghz">5 GHz Band</string>
+    <string name="supported">Supported</string>
+    <string name="not_supported">Not supported</string>
+    <string name="ip_address">IP Address</string>
+    <string name="mac_address">MAC Address</string>
+    <string name="gateway">Gateway</string>
+    <string name="router_mac">Router MAC</string>
+    <string name="dns1">DNS1</string>
+    <string name="dns2">DNS2</string>
+    <string name="dhcp_server">DHCP Server</string>
+
+    <string name="carrier_sim_format">%1$s %2$s</string>
+    <string name="network_type">Network Type</string>
+    <string name="signal">Signal</string>
+    <string name="asu">ASU</string>
+    <string name="quality">Quality</string>
+    <string name="operator">Operator</string>
+    <string name="country">Country</string>
+    <string name="roaming">Roaming</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string name="label_with_space">%1$s </string>
+    <string name="quality_poor">Poor</string>
+    <string name="quality_good">Good</string>
+    <string name="quality_excellent">Excellent</string>
+    <string name="middle_dot">·</string>
+    <string name="dash">—</string>
+    <string name="close_symbol">×</string>
 </resources>
