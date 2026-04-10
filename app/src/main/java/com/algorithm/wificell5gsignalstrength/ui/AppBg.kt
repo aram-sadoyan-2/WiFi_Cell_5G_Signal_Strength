@@ -54,6 +54,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,10 +65,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.algorithm.wificell5gsignalstrength.CellInfoPopupData
 import com.algorithm.wificell5gsignalstrength.NetworkInfoPopupData
+import com.algorithm.wificell5gsignalstrength.R
 import com.algorithm.wificell5gsignalstrength.WifiInfoPopupData
 import kotlin.math.min
-import androidx.compose.ui.res.painterResource
-import com.algorithm.wificell5gsignalstrength.R
 
 private val AppBg = Color(0xFFF1F1F1)
 private val HeaderGray = Color(0xFF8A8A8A)
@@ -116,12 +117,11 @@ fun WifiCellSignalScreen(
                 modifier = Modifier.weight(1f)
             ) {
                 val compact = maxWidth < 360.dp
-                Log.d("dwd","compat = $compact")
 
                 Column(modifier = Modifier.fillMaxSize()) {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth() //todo top
+                            .fillMaxWidth()
                             .weight(if (compact) 0.44f else 0.38f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.Top
@@ -146,7 +146,7 @@ fun WifiCellSignalScreen(
 
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth() //todo middle
+                            .fillMaxWidth()
                             .weight(if (compact) 0.44f else 0.38f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
@@ -156,7 +156,6 @@ fun WifiCellSignalScreen(
                             compact = compact,
                             onInfoClick = {
                                 popupData = state.sim1.infoPopup
-                                Log.d("dwd","popupData sim1 == ${state.sim1.infoPopup}")
                             }
                         )
 
@@ -166,7 +165,6 @@ fun WifiCellSignalScreen(
                             compact = compact,
                             onInfoClick = {
                                 popupData = state.sim2.infoPopup
-                                Log.d("dwd","popupData sim2 == ${state.sim2.infoPopup}")
                             }
                         )
                     }
@@ -209,7 +207,7 @@ private fun TopActionBar(
             IconButton(onClick = onRefresh) {
                 Icon(
                     imageVector = Icons.Outlined.Refresh,
-                    contentDescription = "Refresh",
+                    contentDescription = stringResource(R.string.refresh),
                     tint = Color.White,
                     modifier = Modifier.size(22.dp)
                 )
@@ -219,7 +217,7 @@ private fun TopActionBar(
         IconButton(onClick = onSettingsClick) {
             Icon(
                 imageVector = Icons.Outlined.Settings,
-                contentDescription = "Settings",
+                contentDescription = stringResource(R.string.settings),
                 tint = HeaderGray,
                 modifier = Modifier.size(30.dp)
             )
@@ -310,7 +308,8 @@ private fun WifiSignalCard(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 10.dp).padding( top = 12.dp, bottom = 10.dp),
+                    .padding(horizontal = 10.dp)
+                    .padding(top = 12.dp, bottom = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Row(
@@ -348,7 +347,6 @@ private fun WifiSignalCard(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // todo Top Left Poor Good Excellent
                 QualityRow(
                     quality = data.quality,
                     compact = true
@@ -357,7 +355,7 @@ private fun WifiSignalCard(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "dBm ${data.dbm}",
+                    text = stringResource(R.string.dbm_value, data.dbm),
                     color = DarkText,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold
@@ -366,9 +364,9 @@ private fun WifiSignalCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = data.pingMs?.let { "ping $it mSec" }
-                        ?: data.linkSpeedMbps?.let { "link $it Mbps" }
-                        ?: "ping —",
+                    text = data.pingMs?.let { stringResource(R.string.ping_msec_value, it) }
+                        ?: data.linkSpeedMbps?.let { stringResource(R.string.link_mbps_value, it) }
+                        ?: stringResource(R.string.ping_empty),
                     color = DarkText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -377,7 +375,7 @@ private fun WifiSignalCard(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = "Connected to",
+                    text = stringResource(R.string.connected_to),
                     color = MutedText,
                     fontSize = 11.sp,
                     textAlign = TextAlign.Center
@@ -404,7 +402,7 @@ private fun CellSignalCard(
     compact: Boolean,
     onInfoClick: () -> Unit
 ) {
-    val showInfo = data.carrier != "NO SIM"
+    val showInfo = data.carrier != stringResource(R.string.no_sim)
 
     Card(
         modifier = modifier,
@@ -480,7 +478,7 @@ private fun CellSignalCard(
                     Spacer(modifier = Modifier.width(4.dp))
 
                     Text(
-                        text = "(${data.simLabel})",
+                        text = stringResource(R.string.sim_label_format, data.simLabel),
                         color = DarkText,
                         fontSize = if (compact) 10.sp else 11.sp,
                         fontWeight = FontWeight.Bold,
@@ -514,7 +512,7 @@ private fun CellSignalCard(
                 ) {
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
-                            text = "ASU ",
+                            text = stringResource(R.string.asu_label_with_space),
                             color = MutedText,
                             fontSize = if (compact) 11.sp else 12.sp
                         )
@@ -528,7 +526,7 @@ private fun CellSignalCard(
 
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
-                            text = "dBm ",
+                            text = stringResource(R.string.dbm_label_with_space),
                             color = MutedText,
                             fontSize = if (compact) 11.sp else 12.sp
                         )
@@ -547,12 +545,13 @@ private fun CellSignalCard(
                     verticalAlignment = Alignment.Bottom
                 ) {
                     Text(
-                        text = "ping ",
+                        text = stringResource(R.string.ping_label_with_space),
                         color = MutedText,
                         fontSize = if (compact) 11.sp else 12.sp
                     )
                     Text(
-                        text = data.pingMs?.let { "$it mSec" } ?: "—",
+                        text = data.pingMs?.let { stringResource(R.string.msec_value, it) }
+                            ?: stringResource(R.string.dash),
                         color = DarkText,
                         fontSize = if (compact) 16.sp else 18.sp,
                         fontWeight = FontWeight.Bold
@@ -562,7 +561,7 @@ private fun CellSignalCard(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "Connected to cell tower",
+                    text = stringResource(R.string.connected_to_cell_tower),
                     color = MutedText,
                     fontSize = if (compact) 10.sp else 11.sp,
                     textAlign = TextAlign.Center,
@@ -570,7 +569,7 @@ private fun CellSignalCard(
                 )
 
                 Text(
-                    text = "ID: ${data.towerId}",
+                    text = stringResource(R.string.tower_id, data.towerId),
                     color = HeaderGray,
                     fontSize = if (compact) 12.sp else 13.sp,
                     fontWeight = FontWeight.Bold,
@@ -606,7 +605,7 @@ private fun SpeedTestPanel(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "SPEEDTEST",
+            text = stringResource(R.string.speedtest),
             color = MutedText,
             fontSize = if (compact) 15.sp else 17.sp,
             fontWeight = FontWeight.SemiBold
@@ -696,7 +695,7 @@ private fun SpeedCircle(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "GO",
+                        text = stringResource(R.string.go),
                         color = Color.White,
                         fontSize = if (compact) 22.sp else 28.sp,
                         fontWeight = FontWeight.Bold
@@ -706,9 +705,9 @@ private fun SpeedCircle(
 
             is SpeedCircleState.Downloading -> {
                 SpeedCenterMetric(
-                    label = "DOWNLOAD",
+                    label = stringResource(R.string.download_upper),
                     value = state.downloadMbps.format1(),
-                    unit = "Mbps",
+                    unit = stringResource(R.string.mbps),
                     pingMs = state.pingMs,
                     compact = compact
                 )
@@ -716,9 +715,9 @@ private fun SpeedCircle(
 
             is SpeedCircleState.Uploading -> {
                 SpeedCenterMetric(
-                    label = "UPLOAD",
+                    label = stringResource(R.string.upload_upper),
                     value = state.uploadMbps.format1(),
-                    unit = "Mbps",
+                    unit = stringResource(R.string.mbps),
                     pingMs = state.pingMs,
                     compact = compact
                 )
@@ -765,7 +764,7 @@ private fun SpeedCenterMetric(
         Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-            text = "Ping $pingMs ms",
+            text = stringResource(R.string.ping_ms_value, pingMs),
             color = DarkText,
             fontSize = if (compact) 13.sp else 16.sp,
             fontWeight = FontWeight.Bold
@@ -788,14 +787,14 @@ private fun SpeedTestResultPanel(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "SPEEDTEST",
+                text = stringResource(R.string.speedtest),
                 color = MutedText,
                 fontSize = if (compact) 16.sp else 18.sp,
                 fontWeight = FontWeight.SemiBold
             )
 
             Text(
-                text = "Download",
+                text = stringResource(R.string.download),
                 color = Color(0xFF14A8C6),
                 fontSize = if (compact) 11.sp else 13.sp,
                 fontWeight = FontWeight.Medium
@@ -809,13 +808,13 @@ private fun SpeedTestResultPanel(
             )
 
             Text(
-                text = "↓Mbps",
+                text = stringResource(R.string.download_mbps_compact),
                 color = MutedText,
                 fontSize = if (compact) 14.sp else 16.sp
             )
 
             Text(
-                text = "Upload",
+                text = stringResource(R.string.upload),
                 color = SpeedRingUpload,
                 fontSize = if (compact) 11.sp else 13.sp,
                 fontWeight = FontWeight.Medium
@@ -829,13 +828,13 @@ private fun SpeedTestResultPanel(
             )
 
             Text(
-                text = "↑Mbps",
+                text = stringResource(R.string.upload_mbps_compact),
                 color = MutedText,
                 fontSize = if (compact) 13.sp else 15.sp
             )
 
             Text(
-                text = "Ping ${state.pingMs} ms",
+                text = stringResource(R.string.ping_ms_value, state.pingMs),
                 color = DarkText,
                 fontSize = if (compact) 16.sp else 18.sp,
                 fontWeight = FontWeight.Bold
@@ -853,7 +852,7 @@ private fun SpeedTestResultPanel(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "×",
+                text = stringResource(R.string.close_symbol),
                 color = Color.Black,
                 fontSize = if (compact) 20.sp else 22.sp
             )
@@ -874,7 +873,7 @@ private fun ChannelInterferenceCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Text(
-            text = "Wi-Fi Channel Interference",
+            text = stringResource(R.string.wifi_channel_interference),
             color = Color.White,
             fontSize = if (compact) 16.sp else 18.sp,
             fontWeight = FontWeight.Bold,
@@ -888,7 +887,7 @@ private fun ChannelInterferenceCard(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
-                SectionCard(title = "Current Wi-Fi", compact = compact) {
+                SectionCard(title = stringResource(R.string.current_wifi), compact = compact) {
                     data.currentWifi.forEachIndexed { index, row ->
                         ChannelRow(row, compact)
                         if (index != data.currentWifi.lastIndex) {
@@ -903,7 +902,7 @@ private fun ChannelInterferenceCard(
             }
 
             item {
-                SectionCard(title = "Interference  Channel", compact = compact) {
+                SectionCard(title = stringResource(R.string.interference_channel), compact = compact) {
                     if (data.interference.isEmpty()) {
                         EmptySectionText()
                     } else {
@@ -922,7 +921,7 @@ private fun ChannelInterferenceCard(
             }
 
             item {
-                SectionCard(title = "Other networks", compact = compact) {
+                SectionCard(title = stringResource(R.string.other_networks), compact = compact) {
                     if (data.otherNetworks.isEmpty()) {
                         EmptySectionText()
                     } else {
@@ -946,7 +945,7 @@ private fun ChannelInterferenceCard(
 @Composable
 private fun EmptySectionText() {
     Text(
-        text = "No networks found",
+        text = stringResource(R.string.no_networks_found),
         color = MutedText,
         fontSize = 13.sp
     )
@@ -1024,7 +1023,6 @@ private fun ChannelRow(
     }
 }
 
-
 @Composable
 private fun HeaderInfoCapsuleSmall(
     onClick: () -> Unit
@@ -1040,7 +1038,7 @@ private fun HeaderInfoCapsuleSmall(
     ) {
         Icon(
             imageVector = Icons.Outlined.Info,
-            contentDescription = "Info",
+            contentDescription = stringResource(R.string.info),
             tint = Color.Black,
             modifier = Modifier.size(14.dp)
         )
@@ -1108,7 +1106,7 @@ private fun NetworkInfoPopup(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Close,
-                    contentDescription = "Close",
+                    contentDescription = stringResource(R.string.close),
                     tint = Color.Black,
                     modifier = Modifier.size(16.dp)
                 )
@@ -1142,15 +1140,18 @@ private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        InfoLine("Access Point", data.accessPoint)
-        InfoLine("Frequency", "${data.frequencyMHz} MHz")
-        InfoLine("Channel", data.channel.toString())
-        InfoLine("Linkspeed", data.linkSpeedMbps?.let { "$it Mbps" } ?: "—")
+        InfoLine(stringResource(R.string.access_point), data.accessPoint)
+        InfoLine(stringResource(R.string.frequency), stringResource(R.string.frequency_mhz_value, data.frequencyMHz))
+        InfoLine(stringResource(R.string.channel), data.channel.toString())
+        InfoLine(
+            stringResource(R.string.link_speed),
+            data.linkSpeedMbps?.let { stringResource(R.string.mbps_value, it) } ?: stringResource(R.string.dash)
+        )
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "Router",
+            text = stringResource(R.string.router),
             color = DarkText,
             fontSize = 17.sp,
             fontWeight = FontWeight.Bold
@@ -1158,13 +1159,16 @@ private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        InfoLine("5 GHz Band", if (data.is5GHzSupported) "Supported" else "Not supported")
-        InfoLine("IP Address", data.ipAddress)
+        InfoLine(
+            stringResource(R.string.band_5ghz),
+            if (data.is5GHzSupported) stringResource(R.string.supported) else stringResource(R.string.not_supported)
+        )
+        InfoLine(stringResource(R.string.ip_address), data.ipAddress)
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = "MAC Address",
+            text = stringResource(R.string.mac_address),
             color = DarkText,
             fontSize = 17.sp,
             fontWeight = FontWeight.Bold
@@ -1172,11 +1176,11 @@ private fun WifiInfoPopupContent(data: WifiInfoPopupData) {
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        InfoLine("Gateway", data.gateway)
-        InfoLine("Router MAC", data.routerMac)
-        InfoLine("DNS1", data.dns1)
-        InfoLine("DNS2", data.dns2)
-        InfoLine("DHCP Server", data.dhcpServer)
+        InfoLine(stringResource(R.string.gateway), data.gateway)
+        InfoLine(stringResource(R.string.router_mac), data.routerMac)
+        InfoLine(stringResource(R.string.dns1), data.dns1)
+        InfoLine(stringResource(R.string.dns2), data.dns2)
+        InfoLine(stringResource(R.string.dhcp_server), data.dhcpServer)
     }
 }
 
@@ -1196,7 +1200,7 @@ private fun CellInfoPopupContent(data: CellInfoPopupData) {
             Spacer(modifier = Modifier.width(12.dp))
 
             Text(
-                text = "${data.carrier} ${data.simLabel}",
+                text = stringResource(R.string.carrier_sim_format, data.carrier, data.simLabel),
                 color = DarkText,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
@@ -1205,13 +1209,16 @@ private fun CellInfoPopupContent(data: CellInfoPopupData) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        InfoLine("Network Type", data.networkType)
-        InfoLine("Signal", "${data.dbm} dBm")
-        InfoLine("ASU", data.asu.toString())
-        InfoLine("Quality", data.qualityLabel)
-        InfoLine("Operator", data.operatorName)
-        InfoLine("Country", data.countryIso)
-        InfoLine("Roaming", if (data.roaming) "Yes" else "No")
+        InfoLine(stringResource(R.string.network_type), data.networkType)
+        InfoLine(stringResource(R.string.signal), stringResource(R.string.dbm_unit_value, data.dbm))
+        InfoLine(stringResource(R.string.asu), data.asu.toString())
+        InfoLine(stringResource(R.string.quality), data.qualityLabel)
+        InfoLine(stringResource(R.string.operator), data.operatorName)
+        InfoLine(stringResource(R.string.country), data.countryIso)
+        InfoLine(
+            stringResource(R.string.roaming),
+            if (data.roaming) stringResource(R.string.yes) else stringResource(R.string.no)
+        )
     }
 }
 
@@ -1227,7 +1234,7 @@ private fun InfoLine(
         verticalAlignment = Alignment.Top
     ) {
         Text(
-            text = "$label ",
+            text = stringResource(R.string.label_with_space, label),
             color = DarkText,
             fontSize = 17.sp
         )
@@ -1256,7 +1263,7 @@ fun QualityRow(
         horizontalArrangement = Arrangement.Center
     ) {
         QualityItem(
-            text = "Poor",
+            text = stringResource(R.string.quality_poor),
             selected = quality == SignalQuality.POOR,
             selectedColor = Color(0xFFF08E8E),
             textSize = textSize,
@@ -1266,14 +1273,14 @@ fun QualityRow(
         )
 
         Text(
-            text = "·",
+            text = stringResource(R.string.middle_dot),
             color = normalColor,
             fontSize = textSize,
             modifier = Modifier.padding(horizontal = if (compact) 2.dp else 4.dp)
         )
 
         QualityItem(
-            text = "Good",
+            text = stringResource(R.string.quality_good),
             selected = quality == SignalQuality.GOOD || quality == SignalQuality.OK_ORANGE,
             selectedColor = if (quality == SignalQuality.OK_ORANGE) {
                 Color(0xFFF3C15A)
@@ -1287,14 +1294,14 @@ fun QualityRow(
         )
 
         Text(
-            text = "·",
+            text = stringResource(R.string.middle_dot),
             color = normalColor,
             fontSize = textSize,
             modifier = Modifier.padding(horizontal = if (compact) 2.dp else 4.dp)
         )
 
         QualityItem(
-            text = "Excellent",
+            text = stringResource(R.string.quality_excellent),
             selected = quality == SignalQuality.EXCELLENT,
             selectedColor = Color(0xFF8EF15A),
             textSize = textSize,
