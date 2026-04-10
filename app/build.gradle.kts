@@ -11,7 +11,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.algorithm.wificell5gsignalstrength"
+        applicationId = "com.algorithm.wificellgsignalstrength"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
