@@ -1,0 +1,88 @@
+<resources>
+    <string name="app_name">स्क्रीन और टच डायग्नोस्टिक</string>
+
+    <!-- Home -->
+    <string name="home_title">TouchLab</string>
+    <string name="home_subtitle">स्क्रीन और टच डायग्नोस्टिक</string>
+    <string name="hero_title">कुछ सेकंड में अपनी स्क्रीन जांचें</string>
+    <string name="hero_subtitle">डेड ज़ोन, मल्टी-टच और टच की सटीकता जांचें।</string>
+
+    <string name="quick_test">क्विक टेस्ट</string>
+    <string name="quick_test_subtitle">पूरी स्क्रीन जांच शुरू करें</string>
+
+    <string name="multi_touch_test">मल्टी-टच टेस्ट</string>
+    <string name="multi_touch_test_subtitle">कई टच पॉइंट जांचें</string>
+
+    <string name="draw_test">ड्रॉ टेस्ट</string>
+    <string name="draw_test_subtitle">टच ड्रॉइंग की सटीकता जांचें</string>
+
+    <string name="edge_test">एज टेस्ट</string>
+    <string name="edge_test_subtitle">स्क्रीन के किनारों की जांच करें</string>
+
+    <string name="device_overview">डिवाइस अवलोकन</string>
+    <string name="max_touches_label">अधिकतम टच:</string>
+    <string name="max_touches_value">10 पॉइंट</string>
+    <string name="last_test_label">पिछला टेस्ट:</string>
+    <string name="last_test_value">अभी तक नहीं चलाया गया</string>
+    <string name="screen_size_label">स्क्रीन आकार:</string>
+    <string name="screen_size_value">6.5 इंच</string>
+    <string name="mode_label">मोड:</string>
+    <string name="mode_value">ऑफ़लाइन</string>
+
+    <!-- Common -->
+    <string name="status_passed">स्थिति: पास</string>
+    <string name="status_in_progress">स्थिति: जारी है</string>
+    <string name="status_waiting">स्थिति: प्रतीक्षा में</string>
+    <string name="reset">रीसेट</string>
+    <string name="done">हो गया</string>
+    <string name="finish">समाप्त करें</string>
+    <string name="percent_format">%1$d%%</string>
+
+    <!-- Quick Test -->
+    <string name="quick_test_screen_title">क्विक टेस्ट</string>
+    <string name="quick_test_screen_subtitle">डेड ज़ोन जल्दी खोजें</string>
+    <string name="quick_test_success">बहुत बढ़िया! पूरी स्क्रीन जांच ली गई।</string>
+    <string name="quick_test_instruction">स्क्रीन के सभी हिस्सों को छुएँ।</string>
+    <string name="quick_test_hint">जिस हिस्से को छूएँगे वह चमकेगा। सभी ब्लॉक कवर करने की कोशिश करें।</string>
+    <string name="quick_test_start_hint">यहाँ छुएँ</string>
+    <string name="quick_test_start_subhint">पूरी स्क्रीन का क्षेत्र कवर करें</string>
+    <string name="quick_test_cells_covered">%1$d / %2$d सेल कवर हुए</string>
+
+    <!-- Multi-Touch -->
+    <string name="multi_touch_screen_title">मल्टी-टच टेस्ट</string>
+    <string name="multi_touch_screen_subtitle">एक साथ कई उंगलियाँ जांचें</string>
+    <string name="multi_touch_success">बहुत बढ़िया! मल्टी-टच काम कर रहा है।</string>
+    <string name="multi_touch_instruction">स्क्रीन पर कई उंगलियाँ रखें।</string>
+    <string name="multi_touch_hint">एक ही समय में कई उंगलियों से स्क्रीन को छूकर देखें।</string>
+    <string name="multi_touch_start_hint">यहाँ छुएँ</string>
+    <string name="multi_touch_start_subhint">एक साथ कई उंगलियाँ इस्तेमाल करें</string>
+    <string name="multi_touch_current_highest">अभी: %1$d • अधिकतम: %2$d</string>
+    <string name="multi_touch_target">लक्ष्य: %1$d उंगलियाँ</string>
+    <string name="multi_touch_highest_progress">अधिकतम: %1$d / %2$d</string>
+    <string name="multi_touch_finger_singular">उंगली</string>
+    <string name="multi_touch_finger_plural">उंगलियाँ</string>
+
+    <!-- Draw Test -->
+    <string name="draw_screen_title">ड्रॉ टेस्ट</string>
+    <string name="draw_screen_subtitle">टच ड्रॉइंग की सटीकता जांचें</string>
+    <string name="draw_success">अच्छा! टच ड्रॉइंग का पता चल गया।</string>
+    <string name="draw_instruction">टच ट्रैकिंग जांचने के लिए स्क्रीन पर ड्रॉ करें।</string>
+    <string name="draw_hint">धीमी लाइनें, तेज लाइनें, कर्व और कोने आज़माएँ।</string>
+    <string name="draw_start_hint">ड्रॉ करना शुरू करें</string>
+    <string name="draw_start_subhint">लाइनें आपकी उंगली का स्मूथ तरीके से पीछा करें</string>
+    <string name="draw_strokes_points">स्ट्रोक: %1$d • पॉइंट: %2$d</string>
+    <string name="draw_strokes_only">स्ट्रोक: %1$d</string>
+
+    <!-- Edge Test -->
+    <string name="edge_screen_title">एज टेस्ट</string>
+    <string name="edge_screen_subtitle">किनारों की प्रतिक्रिया जांचें</string>
+    <string name="edge_success">बहुत बढ़िया! स्क्रीन के किनारे प्रतिक्रिया दे रहे हैं।</string>
+    <string name="edge_instruction">अपनी उंगली स्क्रीन के सभी किनारों पर घुमाएँ।</string>
+    <string name="edge_hint">ऊपरी, दाएँ, निचले और बाएँ किनारे के साथ चलें।</string>
+    <string name="edge_start_hint">किनारों को ट्रेस करें</string>
+    <string name="edge_start_subhint">पूरे स्क्रीन बॉर्डर को कवर करें</string>
+    <string name="edge_zones_covered">%1$d / %2$d एज ज़ोन कवर हुए</string>
+
+    <!-- Shared dynamic labels -->
+    <string name="active_fingers">सक्रिय उंगलियाँ: %1$d</string>
+</resources>
