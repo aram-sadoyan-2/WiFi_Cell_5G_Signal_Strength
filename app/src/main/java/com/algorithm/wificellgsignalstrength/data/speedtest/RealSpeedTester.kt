@@ -4,13 +4,14 @@ import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import javax.inject.Inject
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-class RealSpeedTester {
+class RealSpeedTester @Inject constructor() {
 
     companion object {
         private const val DOWNLOAD_BASE = "https://speed.cloudflare.com/__down"

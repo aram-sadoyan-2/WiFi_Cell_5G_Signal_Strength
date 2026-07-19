@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.hilt.android)
 }
 
 android {
@@ -49,10 +51,28 @@ kotlin {
     }
 }
 
+kapt {
+    correctErrorTypes = true
+}
+
+configurations.matching { it.name.startsWith("kapt") }.configureEach {
+    resolutionStrategy {
+        force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
+    }
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
+
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    kapt("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
+    implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -74,4 +94,6 @@ dependencies {
 
     implementation(libs.androidx.glance)
     implementation(libs.androidx.glance.appwidget)
+
+    implementation(libs.androidx.datastore.preferences)
 }
