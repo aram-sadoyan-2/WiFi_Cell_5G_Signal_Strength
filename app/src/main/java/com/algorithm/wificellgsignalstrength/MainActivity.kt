@@ -30,19 +30,22 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
-import com.algorithm.wificellgsignalstrength.ui.CellSignalData
-import com.algorithm.wificellgsignalstrength.ui.ChannelRowData
-import com.algorithm.wificellgsignalstrength.ui.ChannelSectionData
-import com.algorithm.wificellgsignalstrength.ui.SignalQuality
-import com.algorithm.wificellgsignalstrength.ui.SignalUiState
-import com.algorithm.wificellgsignalstrength.ui.SpeedCircleState
-import com.algorithm.wificellgsignalstrength.ui.WifiCardData
-import com.algorithm.wificellgsignalstrength.ui.WifiCellSignalScreen
-import com.algorithm.wificellgsignalstrength.widget.SpeedTestWidget
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import com.algorithm.wificellgsignalstrength.data.model.CellInfoPopupData
+import com.algorithm.wificellgsignalstrength.data.model.WifiInfoPopupData
+import com.algorithm.wificellgsignalstrength.data.speedtest.RealSpeedTester
+import com.algorithm.wificellgsignalstrength.ui.model.CellSignalData
+import com.algorithm.wificellgsignalstrength.ui.model.ChannelRowData
+import com.algorithm.wificellgsignalstrength.ui.model.ChannelSectionData
+import com.algorithm.wificellgsignalstrength.ui.model.SignalQuality
+import com.algorithm.wificellgsignalstrength.ui.model.SignalUiState
+import com.algorithm.wificellgsignalstrength.ui.model.SpeedCircleState
+import com.algorithm.wificellgsignalstrength.ui.model.WifiCardData
+import com.algorithm.wificellgsignalstrength.ui.screens.main.WifiCellSignalScreen
+import com.algorithm.wificellgsignalstrength.widget.SpeedTestWidget
 
 class MainActivity : ComponentActivity() {
 

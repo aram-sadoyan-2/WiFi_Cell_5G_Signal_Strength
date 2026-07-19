@@ -1,11 +1,11 @@
 package com.algorithm.wificellgsignalstrength.widget
 
 import android.content.Context
+import androidx.core.content.edit
 import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.core.content.edit
 
 object SpeedWidgetUpdater {
     fun update(

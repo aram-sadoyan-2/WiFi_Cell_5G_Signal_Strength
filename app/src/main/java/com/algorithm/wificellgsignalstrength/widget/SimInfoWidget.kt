@@ -40,9 +40,9 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import java.util.Locale
 import com.algorithm.wificellgsignalstrength.R
 import com.algorithm.wificellgsignalstrength.MainActivity
-import java.util.Locale
 
 class SimInfoWidget : GlanceAppWidget() {
 
