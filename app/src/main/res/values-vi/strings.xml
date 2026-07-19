@@ -1,13 +1,8 @@
 <resources>
     <string name="app_name">WiFi Di Động 5G Cường Độ Tín Hiệu</string>
     <string name="ping_label">Ping</string>
-    <string name="ping_value">%1$d ms</string>
-    <string name="ping_value_msec">%1$s mSec</string>
-    <string name="mbps_down">↓ Mbps</string>
-    <string name="mbps_up">↑ Mbps</string>
     <string name="wifi_signal">Tín hiệu WiFi</string>
     <string name="cell_signal">Tín hiệu di động</string>
-    <string name="lte_signal">Tín hiệu LTE</string>
     <string name="connected">Đã kết nối</string>
     <string name="wifi_label">Wi-Fi</string>
     <string name="cellular">Di động</string>
@@ -17,7 +12,6 @@
     <string name="current">Hiện tại</string>
     <string name="sim_1">SIM 1</string>
     <string name="sim_2">SIM 2</string>
-    <string name="sim_network_format">(%1$s) %2$s</string>
     <string name="refresh">Làm mới</string>
     <string name="settings">Cài đặt</string>
     <string name="info">Thông tin</string>

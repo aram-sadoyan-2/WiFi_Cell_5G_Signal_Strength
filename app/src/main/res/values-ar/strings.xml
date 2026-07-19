@@ -2,13 +2,8 @@
     <string name="app_name">قوة إشارة WiFi Cell 5G</string>
 
     <string name="ping_label">بينغ</string>
-    <string name="ping_value">%1$d مللي ثانية</string>
-    <string name="ping_value_msec">%1$s مللي ثانية</string>
-    <string name="mbps_down">↓ ميجابت/ث</string>
-    <string name="mbps_up">↑ ميجابت/ث</string>
     <string name="wifi_signal">إشارة WiFi</string>
     <string name="cell_signal">إشارة الشبكة</string>
-    <string name="lte_signal">إشارة LTE</string>
     <string name="connected">متصل</string>
     <string name="wifi_label">Wi-Fi</string>
     <string name="cellular">خلوي</string>
@@ -18,7 +13,6 @@
     <string name="current">الحالي</string>
     <string name="sim_1">SIM 1</string>
     <string name="sim_2">SIM 2</string>
-    <string name="sim_network_format">(%1$s) %2$s</string>
     <string name="refresh">تحديث</string>
     <string name="settings">الإعدادات</string>
     <string name="info">معلومات</string>

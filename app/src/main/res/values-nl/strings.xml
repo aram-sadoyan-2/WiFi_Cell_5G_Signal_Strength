@@ -2,13 +2,8 @@
     <string name="app_name">WiFi Mobiel 5G Signaalsterkte</string>
 
     <string name="ping_label">Ping</string>
-    <string name="ping_value">%1$d ms</string>
-    <string name="ping_value_msec">%1$s mSec</string>
-    <string name="mbps_down">↓ Mbps</string>
-    <string name="mbps_up">↑ Mbps</string>
     <string name="wifi_signal">WiFi signaal</string>
     <string name="cell_signal">Mobiel signaal</string>
-    <string name="lte_signal">LTE signaal</string>
     <string name="connected">Verbonden</string>
     <string name="wifi_label">Wi-Fi</string>
     <string name="cellular">Mobiel</string>
@@ -18,7 +13,6 @@
     <string name="current">Huidig</string>
     <string name="sim_1">SIM 1</string>
     <string name="sim_2">SIM 2</string>
-    <string name="sim_network_format">(%1$s) %2$s</string>
     <string name="refresh">Vernieuwen</string>
     <string name="settings">Instellingen</string>
     <string name="info">Info</string>

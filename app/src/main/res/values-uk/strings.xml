@@ -1,13 +1,8 @@
 <resources>
     <string name="app_name">WiFi Стільниковий 5G Сигнал</string>
     <string name="ping_label">Пінг</string>
-    <string name="ping_value">%1$d мс</string>
-    <string name="ping_value_msec">%1$s мс</string>
-    <string name="mbps_down">↓ Мбіт/с</string>
-    <string name="mbps_up">↑ Мбіт/с</string>
     <string name="wifi_signal">Сигнал WiFi</string>
     <string name="cell_signal">Сигнал мережі</string>
-    <string name="lte_signal">Сигнал LTE</string>
     <string name="connected">Під\'єднано</string>
     <string name="wifi_label">Wi-Fi</string>
     <string name="cellular">Стільниковий</string>
@@ -17,7 +12,6 @@
     <string name="current">Поточний</string>
     <string name="sim_1">SIM 1</string>
     <string name="sim_2">SIM 2</string>
-    <string name="sim_network_format">(%1$s) %2$s</string>
     <string name="refresh">Оновити</string>
     <string name="settings">Налаштування</string>
     <string name="info">Інформація</string>

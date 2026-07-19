@@ -24,6 +24,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
@@ -72,12 +73,14 @@ class MainActivity : ComponentActivity() {
     private var latestSignalStrength: SignalStrength? = null
     private var speedTestJob: Job? = null
 
+    @RequiresApi(Build.VERSION_CODES.P)
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) {
         refreshAll()
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -104,6 +107,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -115,6 +119,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onStart() {
         super.onStart()
         registerWifiReceiver()
@@ -133,6 +138,7 @@ class MainActivity : ComponentActivity() {
         speedTestJob = null
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     private fun requestNeededPermissions() {
         val permissions = buildList {
             add(Manifest.permission.ACCESS_WIFI_STATE)
@@ -158,6 +164,7 @@ class MainActivity : ComponentActivity() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     private fun startRefreshLoop() {
         refreshJob?.cancel()
         refreshJob = lifecycleScope.launch {
@@ -168,6 +175,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     private fun refreshAll() {
         if (hasWifiScanPermission()) {
             runCatching { wifiManager.startScan() }
@@ -175,6 +183,7 @@ class MainActivity : ComponentActivity() {
         uiState = buildSignalUiState()
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     private fun resetSpeedTest() {
         speedTestJob?.cancel()
         speedTestJob = null
@@ -182,6 +191,7 @@ class MainActivity : ComponentActivity() {
         uiState = buildSignalUiState()
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     private fun runRealSpeedTest() {
         speedTestJob?.cancel()
         speedTestJob = lifecycleScope.launch {
@@ -237,6 +247,7 @@ class MainActivity : ComponentActivity() {
         if (wifiReceiver != null) return
 
         wifiReceiver = object : BroadcastReceiver() {
+            @RequiresApi(Build.VERSION_CODES.P)
             override fun onReceive(context: Context?, intent: Intent?) {
                 uiState = buildSignalUiState()
             }
@@ -303,6 +314,7 @@ class MainActivity : ComponentActivity() {
         telephonyCallback = null
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("MissingPermission")
     @Suppress("DEPRECATION")
     private fun buildSignalUiState(): SignalUiState {
@@ -466,6 +478,7 @@ class MainActivity : ComponentActivity() {
         }.getOrDefault(emptyList())
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("MissingPermission")
     private fun buildCellSignalDataForSubscription(
         subInfo: SubscriptionInfo,

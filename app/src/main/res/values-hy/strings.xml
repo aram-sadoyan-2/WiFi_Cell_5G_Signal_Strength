@@ -2,13 +2,8 @@
     <string name="app_name">WiFi Cell 5G Signal Strength</string>
 
     <string name="ping_label">Փինգ</string>
-    <string name="ping_value">%1$d մվ</string>
-    <string name="ping_value_msec">%1$s մվ</string>
-    <string name="mbps_down">↓ Մբիթ/վ</string>
-    <string name="mbps_up">↑ Մբիթ/վ</string>
     <string name="wifi_signal">WiFi ազդանշան</string>
     <string name="cell_signal">Բջջային ազդանշան</string>
-    <string name="lte_signal">LTE ազդանշան</string>
     <string name="connected">Միացված է</string>
     <string name="wifi_label">Wi-Fi</string>
     <string name="cellular">Բջջային ցանց</string>
@@ -18,7 +13,6 @@
     <string name="current">Ընթացիկ</string>
     <string name="sim_1">SIM 1</string>
     <string name="sim_2">SIM 2</string>
-    <string name="sim_network_format">(%1$s) %2$s</string>
     <string name="refresh">Թարմացնել</string>
     <string name="settings">Կարգավորումներ</string>
     <string name="info">Տեղեկություն</string>

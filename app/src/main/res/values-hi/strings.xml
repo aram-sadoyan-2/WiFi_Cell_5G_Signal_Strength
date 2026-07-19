@@ -1,88 +1,134 @@
 <resources>
-    <string name="app_name">स्क्रीन और टच डायग्नोस्टिक</string>
+    <string name="app_name">वाईफ़ाई सेल 5जी सिग्नल स्ट्रेंथ</string>
 
-    <!-- Home -->
-    <string name="home_title">TouchLab</string>
-    <string name="home_subtitle">स्क्रीन और टच डायग्नोस्टिक</string>
-    <string name="hero_title">कुछ सेकंड में अपनी स्क्रीन जांचें</string>
-    <string name="hero_subtitle">डेड ज़ोन, मल्टी-टच और टच की सटीकता जांचें।</string>
-
-    <string name="quick_test">क्विक टेस्ट</string>
-    <string name="quick_test_subtitle">पूरी स्क्रीन जांच शुरू करें</string>
-
-    <string name="multi_touch_test">मल्टी-टच टेस्ट</string>
-    <string name="multi_touch_test_subtitle">कई टच पॉइंट जांचें</string>
-
-    <string name="draw_test">ड्रॉ टेस्ट</string>
-    <string name="draw_test_subtitle">टच ड्रॉइंग की सटीकता जांचें</string>
-
-    <string name="edge_test">एज टेस्ट</string>
-    <string name="edge_test_subtitle">स्क्रीन के किनारों की जांच करें</string>
-
-    <string name="device_overview">डिवाइस अवलोकन</string>
-    <string name="max_touches_label">अधिकतम टच:</string>
-    <string name="max_touches_value">10 पॉइंट</string>
-    <string name="last_test_label">पिछला टेस्ट:</string>
-    <string name="last_test_value">अभी तक नहीं चलाया गया</string>
-    <string name="screen_size_label">स्क्रीन आकार:</string>
-    <string name="screen_size_value">6.5 इंच</string>
-    <string name="mode_label">मोड:</string>
-    <string name="mode_value">ऑफ़लाइन</string>
-
-    <!-- Common -->
-    <string name="status_passed">स्थिति: पास</string>
-    <string name="status_in_progress">स्थिति: जारी है</string>
-    <string name="status_waiting">स्थिति: प्रतीक्षा में</string>
-    <string name="reset">रीसेट</string>
-    <string name="done">हो गया</string>
-    <string name="finish">समाप्त करें</string>
-    <string name="percent_format">%1$d%%</string>
-
-    <!-- Quick Test -->
-    <string name="quick_test_screen_title">क्विक टेस्ट</string>
-    <string name="quick_test_screen_subtitle">डेड ज़ोन जल्दी खोजें</string>
-    <string name="quick_test_success">बहुत बढ़िया! पूरी स्क्रीन जांच ली गई।</string>
-    <string name="quick_test_instruction">स्क्रीन के सभी हिस्सों को छुएँ।</string>
-    <string name="quick_test_hint">जिस हिस्से को छूएँगे वह चमकेगा। सभी ब्लॉक कवर करने की कोशिश करें।</string>
-    <string name="quick_test_start_hint">यहाँ छुएँ</string>
-    <string name="quick_test_start_subhint">पूरी स्क्रीन का क्षेत्र कवर करें</string>
-    <string name="quick_test_cells_covered">%1$d / %2$d सेल कवर हुए</string>
-
-    <!-- Multi-Touch -->
-    <string name="multi_touch_screen_title">मल्टी-टच टेस्ट</string>
-    <string name="multi_touch_screen_subtitle">एक साथ कई उंगलियाँ जांचें</string>
-    <string name="multi_touch_success">बहुत बढ़िया! मल्टी-टच काम कर रहा है।</string>
-    <string name="multi_touch_instruction">स्क्रीन पर कई उंगलियाँ रखें।</string>
-    <string name="multi_touch_hint">एक ही समय में कई उंगलियों से स्क्रीन को छूकर देखें।</string>
-    <string name="multi_touch_start_hint">यहाँ छुएँ</string>
-    <string name="multi_touch_start_subhint">एक साथ कई उंगलियाँ इस्तेमाल करें</string>
-    <string name="multi_touch_current_highest">अभी: %1$d • अधिकतम: %2$d</string>
-    <string name="multi_touch_target">लक्ष्य: %1$d उंगलियाँ</string>
-    <string name="multi_touch_highest_progress">अधिकतम: %1$d / %2$d</string>
-    <string name="multi_touch_finger_singular">उंगली</string>
-    <string name="multi_touch_finger_plural">उंगलियाँ</string>
-
-    <!-- Draw Test -->
-    <string name="draw_screen_title">ड्रॉ टेस्ट</string>
-    <string name="draw_screen_subtitle">टच ड्रॉइंग की सटीकता जांचें</string>
-    <string name="draw_success">अच्छा! टच ड्रॉइंग का पता चल गया।</string>
-    <string name="draw_instruction">टच ट्रैकिंग जांचने के लिए स्क्रीन पर ड्रॉ करें।</string>
-    <string name="draw_hint">धीमी लाइनें, तेज लाइनें, कर्व और कोने आज़माएँ।</string>
-    <string name="draw_start_hint">ड्रॉ करना शुरू करें</string>
-    <string name="draw_start_subhint">लाइनें आपकी उंगली का स्मूथ तरीके से पीछा करें</string>
-    <string name="draw_strokes_points">स्ट्रोक: %1$d • पॉइंट: %2$d</string>
-    <string name="draw_strokes_only">स्ट्रोक: %1$d</string>
-
-    <!-- Edge Test -->
-    <string name="edge_screen_title">एज टेस्ट</string>
-    <string name="edge_screen_subtitle">किनारों की प्रतिक्रिया जांचें</string>
-    <string name="edge_success">बहुत बढ़िया! स्क्रीन के किनारे प्रतिक्रिया दे रहे हैं।</string>
-    <string name="edge_instruction">अपनी उंगली स्क्रीन के सभी किनारों पर घुमाएँ।</string>
-    <string name="edge_hint">ऊपरी, दाएँ, निचले और बाएँ किनारे के साथ चलें।</string>
-    <string name="edge_start_hint">किनारों को ट्रेस करें</string>
-    <string name="edge_start_subhint">पूरे स्क्रीन बॉर्डर को कवर करें</string>
-    <string name="edge_zones_covered">%1$d / %2$d एज ज़ोन कवर हुए</string>
-
-    <!-- Shared dynamic labels -->
-    <string name="active_fingers">सक्रिय उंगलियाँ: %1$d</string>
+    <string name="ping_label">पिंग</string>
+    <string name="wifi_signal">वाईफ़ाई सिग्नल</string>
+    <string name="cell_signal">सेल सिग्नल</string>
+    <string name="connected">कनेक्टेड</string>
+    <string name="wifi_label">वाई-फ़ाई</string>
+    <string name="cellular">सेलुलर</string>
+    <string name="offline">ऑफ़लाइन</string>
+    <string name="not_connected">कनेक्ट नहीं है</string>
+    <string name="unknown">अज्ञात</string>
+    <string name="current">वर्तमान</string>
+    <string name="sim_1">SIM 1</string>
+    <string name="sim_2">SIM 2</string>
+    <string name="refresh">रिफ्रेश</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="info">जानकारी</string>
+    <string name="close">बंद करें</string>
+    <string name="speedtest">स्पीडटेस्ट</string>
+    <string name="go">GO</string>
+    <string name="download">डाउनलोड</string>
+    <string name="upload">अपलोड</string>
+    <string name="download_upper">DOWNLOAD</string>
+    <string name="upload_upper">UPLOAD</string>
+    <string name="mbps">Mbps</string>
+    <string name="download_mbps_compact">↓Mbps</string>
+    <string name="upload_mbps_compact">↑Mbps</string>
+    <string name="ping_ms_value">पिंग %1$d ms</string>
+    <string name="dbm_value">dBm %1$d</string>
+    <string name="ping_msec_value">पिंग %1$d mSec</string>
+    <string name="link_mbps_value">लिंक %1$d Mbps</string>
+    <string name="ping_empty">पिंग —</string>
+    <string name="msec_value">%1$d mSec</string>
+    <string name="mbps_value">%1$d Mbps</string>
+    <string name="dbm_unit_value">%1$d dBm</string>
+    <string name="connected_to">किससे कनेक्टेड</string>
+    <string name="connected_to_cell_tower">सेल टॉवर से कनेक्टेड</string>
+    <string name="tower_id">ID: %1$s</string>
+    <string name="no_sim">कोई SIM नहीं</string>
+    <string name="sim_label_format">(%1$s)</string>
+    <string name="asu_label_with_space">ASU </string>
+    <string name="dbm_label_with_space">dBm </string>
+    <string name="ping_label_with_space">पिंग </string>
+    <string name="wifi_channel_interference">वाई-फ़ाई चैनल इंटरफ़ेरेंस</string>
+    <string name="current_wifi">वर्तमान वाई-फ़ाई</string>
+    <string name="interference_channel">इंटरफ़ेरेंस चैनल</string>
+    <string name="other_networks">अन्य नेटवर्क</string>
+    <string name="no_networks_found">कोई नेटवर्क नहीं मिला</string>
+    <string name="access_point">एक्सेस पॉइंट</string>
+    <string name="frequency">फ़्रीक्वेंसी</string>
+    <string name="frequency_mhz_value">%1$d MHz</string>
+    <string name="channel">चैनल</string>
+    <string name="link_speed">लिंक स्पीड</string>
+    <string name="router">राउटर</string>
+    <string name="band_5ghz">5 GHz बैंड</string>
+    <string name="supported">समर्थित</string>
+    <string name="not_supported">समर्थित नहीं</string>
+    <string name="ip_address">IP पता</string>
+    <string name="mac_address">MAC पता</string>
+    <string name="gateway">गेटवे</string>
+    <string name="router_mac">राउटर MAC</string>
+    <string name="dns1">DNS1</string>
+    <string name="dns2">DNS2</string>
+    <string name="dhcp_server">DHCP सर्वर</string>
+    <string name="carrier_sim_format">%1$s %2$s</string>
+    <string name="network_type">नेटवर्क प्रकार</string>
+    <string name="signal">सिग्नल</string>
+    <string name="asu">ASU</string>
+    <string name="quality">गुणवत्ता</string>
+    <string name="operator">ऑपरेटर</string>
+    <string name="country">देश</string>
+    <string name="roaming">रोमिंग</string>
+    <string name="yes">हाँ</string>
+    <string name="no">नहीं</string>
+    <string name="label_with_space">%1$s </string>
+    <string name="quality_poor">कमज़ोर</string>
+    <string name="quality_good">अच्छा</string>
+    <string name="quality_excellent">उत्कृष्ट</string>
+    <string name="middle_dot">·</string>
+    <string name="dash">—</string>
+    <string name="close_symbol">×</string>
+    <string name="no_sim_title">कोई SIM नहीं</string>
+    <string name="band_2_4_ghz">2.4 GHz</string>
+    <string name="band_5_ghz">5 GHz</string>
+    <string name="band_6_ghz">6 GHz</string>
+    <string name="network_2g">2G</string>
+    <string name="network_3g">3G</string>
+    <string name="network_4g_lte">4G LTE</string>
+    <string name="network_5g">5G</string>
+    <string name="channel_format">चैनल %1$d</string>
+    <string name="hidden_network">&lt;छिपा हुआ&gt;</string>
+    <string name="ms_value_short">%1$d ms</string>
+    <string name="widget_dbm_value">%1$d dBm</string>
+    <string name="run_test">टेस्ट चलाएँ</string>
+    <string name="sim_info">SIM जानकारी</string>
+    <string name="status">स्थिति</string>
+    <string name="on">चालू</string>
+    <string name="off">बंद</string>
+    <string name="double_dash">--</string>
+    <string name="sim_state_ready">तैयार</string>
+    <string name="sim_state_absent">अनुपस्थित</string>
+    <string name="sim_state_pin_required">PIN आवश्यक</string>
+    <string name="sim_state_puk_required">PUK आवश्यक</string>
+    <string name="sim_state_locked">लॉक्ड</string>
+    <string name="sim_state_not_ready">तैयार नहीं</string>
+    <string name="sim_state_disabled">अक्षम</string>
+    <string name="sim_state_io_error">I/O त्रुटि</string>
+    <string name="sim_state_restricted">प्रतिबंधित</string>
+    <string name="widget_manual_add_toast">यह लॉन्चर सीधे विजेट जोड़ने का समर्थन नहीं करता। इसे होम स्क्रीन → Widgets से जोड़ें।</string>
+    <string name="signal_widget_title">सिग्नल विजेट</string>
+    <string name="speed_test_widget_title">स्पीड टेस्ट विजेट</string>
+    <string name="sim_info_widget_title">SIM जानकारी विजेट</string>
+    <string name="widget_already_added_description">यह विजेट पहले से आपकी होम स्क्रीन पर जोड़ा गया है।</string>
+    <string name="signal_widget_direct_add_description">ऐप से सीधे सिग्नल विजेट जोड़ें।</string>
+    <string name="speed_widget_direct_add_description">ऐप से सीधे स्पीड टेस्ट विजेट जोड़ें।</string>
+    <string name="sim_widget_direct_add_description">ऐप से सीधे SIM जानकारी विजेट जोड़ें।</string>
+    <string name="widget_direct_add_not_supported">इस लॉन्चर पर सीधे जोड़ना समर्थित नहीं है।</string>
+    <string name="add_signal_widget">सिग्नल विजेट जोड़ें</string>
+    <string name="add_speed_widget">स्पीड विजेट जोड़ें</string>
+    <string name="add_sim_widget">SIM विजेट जोड़ें</string>
+    <string name="show_manual_steps">मैनुअल स्टेप्स दिखाएँ</string>
+    <string name="already_added">पहले से जोड़ा गया</string>
+    <string name="how_to_remove">कैसे हटाएँ</string>
+    <string name="manual_way">मैनुअल तरीका:</string>
+    <string name="remove_widget_title">इस विजेट को अपनी होम स्क्रीन से हटाने के लिए:</string>
+    <string name="remove_widget_step_1">1. अपने फोन की होम स्क्रीन पर जाएँ</string>
+    <string name="remove_widget_step_2">2. विजेट को लंबा दबाएँ</string>
+    <string name="remove_widget_step_3">3. इसे Remove पर खींचें, या अगर आपका लॉन्चर यह विकल्प दिखाता है तो Remove पर टैप करें</string>
+    <string name="add_widget_step_4">4. WiFi Cell 5G Signal Strength खोजें</string>
+    <string name="add_widget_step_1">1. अपने फोन की होम स्क्रीन पर जाएँ</string>
+    <string name="add_widget_step_2">2. खाली जगह पर लंबा दबाएँ</string>
+    <string name="add_widget_step_3">3. Widgets पर टैप करें</string>
 </resources>

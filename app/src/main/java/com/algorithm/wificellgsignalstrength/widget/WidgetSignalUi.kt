@@ -31,8 +31,8 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import com.algorithm.wificellgsignalstrength.MainActivity
 import com.algorithm.wificellgsignalstrength.R
+import com.algorithm.wificellgsignalstrength.MainActivity
 
 data class WidgetSignalUi(
     val title: String,

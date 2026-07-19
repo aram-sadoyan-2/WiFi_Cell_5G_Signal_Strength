@@ -2,13 +2,8 @@
     <string name="app_name">Intensidad de señal WiFi Cell 5G</string>
 
     <string name="ping_label">Ping</string>
-    <string name="ping_value">%1$d ms</string>
-    <string name="ping_value_msec">%1$s ms</string>
-    <string name="mbps_down">↓ Mbps</string>
-    <string name="mbps_up">↑ Mbps</string>
     <string name="wifi_signal">Señal WiFi</string>
     <string name="cell_signal">Señal celular</string>
-    <string name="lte_signal">Señal LTE</string>
     <string name="connected">Conectado</string>
     <string name="wifi_label">Wi-Fi</string>
     <string name="cellular">Celular</string>
@@ -18,7 +13,6 @@
     <string name="current">Actual</string>
     <string name="sim_1">SIM 1</string>
     <string name="sim_2">SIM 2</string>
-    <string name="sim_network_format">(%1$s) %2$s</string>
     <string name="refresh">Actualizar</string>
     <string name="settings">Ajustes</string>
     <string name="info">Información</string>

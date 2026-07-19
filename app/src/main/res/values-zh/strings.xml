@@ -1,13 +1,8 @@
 <resources>
     <string name="app_name">WiFi 蜂窝 5G 信号强度</string>
     <string name="ping_label">Ping</string>
-    <string name="ping_value">%1$d ms</string>
-    <string name="ping_value_msec">%1$s 毫秒</string>
-    <string name="mbps_down">↓ Mbps</string>
-    <string name="mbps_up">↑ Mbps</string>
     <string name="wifi_signal">WiFi 信号</string>
     <string name="cell_signal">蜂窝信号</string>
-    <string name="lte_signal">LTE 信号</string>
     <string name="connected">已连接</string>
     <string name="wifi_label">Wi-Fi</string>
     <string name="cellular">蜂窝</string>
@@ -17,7 +12,6 @@
     <string name="current">当前</string>
     <string name="sim_1">SIM 1</string>
     <string name="sim_2">SIM 2</string>
-    <string name="sim_network_format">(%1$s) %2$s</string>
     <string name="refresh">刷新</string>
     <string name="settings">设置</string>
     <string name="info">信息</string>
